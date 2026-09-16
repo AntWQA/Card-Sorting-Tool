@@ -1,0 +1,4084 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grouping Study</title>
+<style>
+  :root {
+    /* doTERRA Pure - Base 1.2.2 tokens */
+    --paper: #F6F7F8;
+    --paper-raised: #FFFFFF;
+    --ink: #354657;
+    --muted: rgba(53,70,87,0.64);
+    --line: rgba(190,196,201,0.55);
+    --line-strong: #BEC4C9;
+    --accent: #9D57B2;
+    --accent-ink: #FFFFFF;
+    --accent-tint: #EADAEE;
+    --accent-glow: rgba(157,87,178,0.32);
+    --success: #12B76A;
+    --success-bg: rgba(18,183,106,0.12);
+    --fail: #F04438;
+    --fail-bg: rgba(240,68,56,0.12);
+    --warn: #F79009;
+    --warn-bg: rgba(247,144,9,0.12);
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 2px rgba(53,70,87,0.08), 0 6px 16px rgba(53,70,87,0.10);
+    --font-display: 'Rawline', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Rawline', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    /* Without this, native controls like the checkbox below follow the
+       OS/browser's own dark-mode preference instead of this app's theme --
+       so on a dark system it renders with dark chrome even while the page
+       itself is showing the light theme. */
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #1B2430;
+      --paper-raised: #232E3D;
+      --ink: #E7ECEF;
+      --muted: rgba(231,236,239,0.64);
+      --line: rgba(190,196,201,0.22);
+      --line-strong: rgba(190,196,201,0.4);
+      --accent: #BD8BCA;
+      --accent-ink: #2B1730;
+      --accent-tint: rgba(157,87,178,0.2);
+      --accent-glow: rgba(189,139,202,0.4);
+      --success: #12B76A;
+      --success-bg: rgba(18,183,106,0.18);
+      --fail: #F04438;
+      --fail-bg: rgba(240,68,56,0.18);
+      --warn: #F79009;
+      --warn-bg: rgba(247,144,9,0.18);
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #1B2430;
+    --paper-raised: #232E3D;
+    --ink: #E7ECEF;
+    --muted: rgba(231,236,239,0.64);
+    --line: rgba(190,196,201,0.22);
+    --line-strong: rgba(190,196,201,0.4);
+    --accent: #BD8BCA;
+    --accent-ink: #2B1730;
+    --accent-tint: rgba(157,87,178,0.2);
+    --accent-glow: rgba(189,139,202,0.4);
+    --success: #12B76A;
+    --success-bg: rgba(18,183,106,0.18);
+    --fail: #F04438;
+    --fail-bg: rgba(240,68,56,0.18);
+    --warn: #F79009;
+    --warn-bg: rgba(247,144,9,0.18);
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  [hidden] { display: none !important; }
+  img { max-width: 100%; }
+  a { color: var(--accent); }
+
+  /* ---------- Motion ---------- */
+  /* Small, functional transitions everywhere by default (color/background/
+     border changes are not considered motion that needs reducing). */
+  button, .card-chip, .group-col, .icon-btn, nav.views button, .chip, input[type="text"], textarea {
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    button, .icon-btn { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease; }
+    button:active { transform: scale(0.97); }
+    main.phase-enter { animation: motionCardIn 0.28s ease both; }
+    .select-bar { animation: motionRiseIn 0.22s ease both; }
+    .card-chip.selected, .badge { animation: motionPop 0.16s ease; }
+    .export-menu { animation: motionRiseIn 0.15s ease both; }
+    .shortcuts-panel { animation: motionRiseIn 0.18s ease both; }
+    /* A card landing in a column is the one moment the participant needs
+       confirmed without reading anything -- everything else here is a
+       colour change. */
+    .card-chip.just-placed { animation: motionLand 0.3s ease; }
+    @keyframes motionCardIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes motionRiseIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes motionPop {
+      from { transform: scale(0.94); }
+      to { transform: scale(1); }
+    }
+    @keyframes motionLand {
+      0% { transform: scale(0.88); background: var(--accent-tint); }
+      100% { transform: scale(1); }
+    }
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding-inline: 20px;
+  }
+  .wrap.wide { max-width: 1180px; }
+  .wrap.board { max-width: 1400px; }
+
+  header.top {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .top-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 14px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; flex-direction: column; gap: 5px; }
+  .brand .logo { display: flex; align-items: center; color: var(--ink); }
+  .brand .logo svg { display: block; height: 24px; width: auto; }
+  .brand h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0;
+  }
+  nav.views {
+    display: flex;
+    gap: 6px;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  nav.views button {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  nav.views button.active { background: var(--ink); color: var(--paper); }
+
+  .icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    color: var(--muted);
+    border-radius: 999px;
+    cursor: pointer;
+    padding: 0;
+  }
+  .icon-btn:hover { color: var(--ink); border-color: var(--line-strong); }
+  .icon-btn svg { display: block; }
+  .chevron-down { transform: rotate(90deg); }
+
+  .export-menu-wrap { position: relative; display: inline-flex; }
+  .export-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 230px;
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 4px;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+  }
+  .export-menu button {
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .export-menu button:hover { background: var(--paper); }
+
+  main { padding-block: 28px 64px; }
+
+  .card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 24px;
+  }
+  .card + .card { margin-top: 18px; }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    margin: 0 0 4px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    margin: 0 0 4px;
+  }
+  p.hint { color: var(--muted); font-size: 14px; margin: 0 0 18px; max-width: 60ch; }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .eyebrow.muted { color: var(--muted); }
+  .handoff-card { text-align: center; padding: 52px 24px; }
+  .handoff-card .scenario { font-size: 22px; }
+  .handoff-card .hint { margin: 0 auto 22px; }
+  .handoff-card .btn-row { justify-content: center; }
+  .btn-big { font-size: 16px; padding: 16px 30px; }
+
+  .handoff-graphic {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    margin: 6px 0 24px;
+  }
+  .handoff-party {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent);
+    transition: color 0.2s ease;
+  }
+  .handoff-party.dim { color: var(--muted); opacity: 0.55; }
+  .handoff-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 2px solid currentColor;
+  }
+  .handoff-icon svg { display: block; }
+  .handoff-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .handoff-arrow { color: var(--line-strong); flex: 0 0 auto; }
+  .handoff-arrow.reverse svg { transform: scaleX(-1); }
+
+  .session-chevron {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  .session-chevron.expanded { transform: rotate(90deg); }
+
+  label.field {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  input[type="text"], textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 15px;
+    padding: 10px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  textarea { resize: vertical; min-height: 64px; }
+  textarea.code-editor {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 340px;
+    white-space: pre;
+  }
+  textarea.code-editor.short { min-height: 150px; }
+  input[type="text"]:focus, textarea:focus, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  /* Built from scratch rather than left native: relying on the browser's
+     own checkbox chrome (even with accent-color / color-scheme set) still
+     rendered dark on some platforms regardless of this app's own theme.
+     A fully custom box keyed to our own tokens can't drift from it. */
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    flex-shrink: 0;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 5px;
+    background: var(--paper-raised);
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    cursor: pointer;
+  }
+  input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+  input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid var(--accent-ink);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  input[type="checkbox"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .notes-cell { min-width: 220px; }
+  textarea.notes-edit { font-size: 13px; padding: 8px 10px; min-height: 44px; margin-bottom: 6px; }
+  .notes-save { font-size: 12px; padding: 6px 12px; }
+  .notes-save:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .session-row-toggle {
+    background: none;
+    border: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    padding: 4px 2px;
+    margin: -4px -2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    border-radius: 6px;
+    flex-wrap: wrap;
+  }
+
+  main[tabindex="-1"] { outline: none; }
+
+  /* ---------- Keyboard shortcuts panel ---------- */
+  .shortcuts-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(30, 34, 38, 0.4);
+    z-index: 700;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .shortcuts-panel {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    max-width: 420px;
+    width: 100%;
+    max-height: min(560px, 80vh);
+    overflow-y: auto;
+  }
+  .shortcuts-panel h2 { margin-top: 0; }
+  .shortcuts-list { list-style: none; margin: 0; padding: 0; }
+  .shortcuts-list li {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 10px 0; border-bottom: 1px solid var(--line);
+  }
+  .shortcuts-list li:last-child { border-bottom: none; }
+  .shortcuts-list .desc { font-size: 14px; }
+  .shortcuts-list .scope { display: block; font-size: 12px; color: var(--muted); }
+  .kbd-row { display: flex; gap: 4px; flex-shrink: 0; }
+  kbd.kbd {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--paper);
+    border: 1px solid var(--line-strong);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 3px 7px;
+    color: var(--ink);
+  }
+
+  .btn {
+    font: inherit;
+    font-weight: 700;
+    font-size: 14px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    padding: 11px 18px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+  /* The small "press Enter" hint on a screen's one highlighted CTA
+     (.cta-primary) -- always on an accent-colored button, so a plain
+     translucent-white pill reads fine in both themes without its own
+     tokens. */
+  .cta-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    background: rgba(255,255,255,0.22);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: inherit;
+  }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+  .btn-quiet { background: transparent; color: var(--muted); border-color: transparent; padding: 8px 10px; font-size: 13px; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .think-aloud-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-style: italic;
+    color: var(--muted);
+  }
+  .think-aloud-icon { display: inline-flex; flex: 0 0 auto; }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .progress-row .step {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+  .timer {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 22px;
+    font-weight: 600;
+    background: var(--accent-tint);
+    color: var(--ink);
+    padding: 4px 12px;
+    border-radius: 8px;
+  }
+
+  .scenario {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 26px;
+    line-height: 1.25;
+    text-wrap: balance;
+    margin: 0 0 6px;
+    display: inline-block;
+    max-width: 100%;
+  }
+  .scenario.compact { font-size: 19px; margin-bottom: 10px; }
+  .scenario-meta { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+
+  /* ---------- Sorting board ---------- */
+  /* The deck sticks under the header so the next card is always reachable
+     without scrolling back up a tall board. It's capped and scrolls
+     internally rather than growing, so a 30-card deck can't swallow the
+     screen and hide the columns it's meant to be dragged into. */
+  .board-deck {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 66px);
+    z-index: 15;
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  /* --accent-tint is translucent in the dark theme, and both of these
+     surfaces are sticky, so a bare tint lets the board scroll visibly
+     through them. Painting the tint as a background-image over an opaque
+     background-color keeps the same colour in both themes without the
+     bleed. */
+  .board-deck.drop-target {
+    border-color: var(--accent);
+    background-color: var(--paper-raised);
+    background-image: linear-gradient(var(--accent-tint), var(--accent-tint));
+  }
+  .board-deck.empty { border-style: dashed; box-shadow: none; }
+  .deck-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .deck-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .deck-count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 10px;
+  }
+  .deck-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 156px;
+    overflow-y: auto;
+    padding: 2px;
+  }
+  .deck-empty-note { font-size: 13px; color: var(--muted); padding: 4px 2px; }
+
+  .group-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+    align-items: start;
+    gap: 12px;
+  }
+  .group-col {
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 12px;
+    min-height: 118px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .group-col.drop-target {
+    border-color: var(--accent);
+    background: var(--accent-tint);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  /* The Other column is deliberately set apart from the categories: it's
+     a parking bay, not a peer of the real buckets, and reads as a caution
+     so a participant doesn't fill it by default. */
+  .group-col.other { border-color: var(--warn); background: var(--warn-bg); }
+  .group-col.other.drop-target { border-color: var(--warn); box-shadow: 0 0 0 3px rgba(247,144,9,0.35); }
+  .group-col.custom { border-style: dashed; }
+  .group-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .group-name {
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.3;
+    text-wrap: balance;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .group-col.other .group-name { color: var(--warn); }
+  .group-count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--muted);
+    flex: 0 0 auto;
+  }
+  .group-name-input { font-size: 14px !important; padding: 7px 9px !important; font-weight: 600; }
+  .group-cards { display: flex; flex-direction: column; gap: 6px; }
+  .group-hint { font-size: 11px; color: var(--muted); font-style: italic; }
+
+  /* One chip class for every card, wherever it is -- the deck, a column,
+     or the Other bay -- so a card never changes shape as it moves and the
+     participant keeps track of the one they just put down. */
+  .card-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--paper);
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    padding: 9px 11px;
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: left;
+    color: var(--ink);
+    cursor: grab;
+    /* Touch drags are handled by our own pointer handlers, so the browser
+       must not claim the gesture for scrolling first. The page still
+       scrolls from any of the surrounding surface. */
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    overflow-wrap: anywhere;
+  }
+  .card-chip:hover { border-color: var(--accent); }
+  .card-chip.selected {
+    background: var(--accent-tint);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+  .card-chip.dragging { opacity: 0.35; cursor: grabbing; }
+  .card-chip .grip { color: var(--line-strong); flex: 0 0 auto; display: inline-flex; }
+  .card-chip.selected .grip { color: var(--accent); }
+  .drag-ghost {
+    position: fixed;
+    z-index: 800;
+    pointer-events: none;
+    opacity: 0.95;
+    box-shadow: var(--shadow);
+    transform: rotate(-1.5deg);
+    background: var(--paper-raised);
+    border-color: var(--accent);
+    color: var(--accent);
+    cursor: grabbing;
+  }
+
+  .other-card { display: flex; flex-direction: column; gap: 5px; }
+  .other-reason {
+    font-size: 12.5px !important;
+    padding: 7px 9px !important;
+    background: var(--paper-raised) !important;
+  }
+  .other-reason-read { font-size: 12px; color: var(--muted); font-style: italic; padding-left: 2px; }
+
+  /* Sits above the board's own content at the bottom of the viewport while
+     a card is picked up, because the column it needs to go into may be
+     off-screen -- the instruction has to travel with the card. */
+  .select-bar {
+    position: sticky;
+    bottom: 12px;
+    z-index: 16;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    background-color: var(--paper-raised);
+    background-image: linear-gradient(var(--accent-tint), var(--accent-tint));
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    box-shadow: var(--shadow);
+  }
+  .select-bar .picked { font-weight: 700; font-size: 14px; }
+  .select-bar .picked-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
+  .board-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .new-group-btn {
+    border: 1px dashed var(--line-strong);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 12px;
+    padding: 14px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    min-height: 118px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+  .new-group-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Deliberately quiet. With a card in hand every column shows one of
+     these, and a grid of eleven solid accent buttons drowns out the group
+     names, which are the thing the participant actually has to read to
+     decide. Outlined keeps the affordance unmistakable without competing. */
+  .place-btn {
+    border: 1px dashed var(--accent);
+    background: transparent;
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .place-btn:hover { background: var(--accent); color: var(--accent-ink); border-style: solid; }
+  .group-col.other .place-btn { border-color: var(--warn); color: var(--warn); }
+  .group-col.other .place-btn:hover { background: var(--warn); color: #fff; }
+  .col-del {
+    background: none;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 2px;
+    display: inline-flex;
+    flex: 0 0 auto;
+    border-radius: 4px;
+  }
+  .col-del:hover { color: var(--fail); }
+
+  .naming-row {
+    display: grid;
+    grid-template-columns: minmax(190px, 260px) 1fr;
+    gap: 14px;
+    align-items: start;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .naming-row:last-of-type { border-bottom: none; }
+  .naming-cards { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mini-chip {
+    font-size: 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 4px 8px;
+    color: var(--muted);
+  }
+
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    border: 1px solid var(--line-strong);
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .chip.selected { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge.strong { background: var(--success-bg); color: var(--success); }
+  .badge.mixed { background: var(--warn-bg); color: var(--warn); }
+  .badge.contested { background: var(--fail-bg); color: var(--fail); }
+  .badge.neutral { background: var(--paper); border: 1px solid var(--line-strong); color: var(--muted); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 700; }
+  tbody tr:last-child td { border-bottom: none; }
+  .table-scroll { overflow-x: auto; }
+  td.num, th.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-tile { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .stat-tile .n { font-family: var(--font-mono); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat-tile .l { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+
+  .empty { color: var(--muted); font-size: 14px; padding: 30px 0; text-align: center; }
+  .warn-note { font-size: 13px; color: var(--warn); background: var(--warn-bg); border-radius: 8px; padding: 10px 12px; margin-top: 14px; }
+  .info-note { font-size: 13px; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-top: 14px; }
+
+  .onboard-spotlight {
+    position: fixed;
+    border-radius: 14px;
+    box-shadow: 0 0 0 9999px rgba(30, 34, 38, 0.4), 0 0 0 2px var(--accent-glow), 0 0 0 5px var(--accent-glow);
+    pointer-events: none;
+    z-index: 600;
+    transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease;
+  }
+  .onboard-tip {
+    position: fixed;
+    z-index: 601;
+    background: var(--paper-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 14px 16px;
+    font-family: var(--font-body);
+    color: var(--ink);
+  }
+  .onboard-step-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .onboard-tip-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .onboard-tip-text { font-size: 13px; color: var(--muted); line-height: 1.4; margin-bottom: 12px; }
+  .onboard-tip-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .onboard-skip {
+    background: none;
+    border: 0;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 6px 4px;
+    text-decoration: underline;
+  }
+
+  details.method summary { cursor: pointer; font-weight: 600; font-size: 13px; color: var(--muted); }
+  details.method { margin-top: 18px; }
+  details.method .body { font-size: 13px; color: var(--muted); margin-top: 10px; max-width: 68ch; }
+
+  @media (max-width: 760px) {
+    /* A sorting board needs width. Below tablet, the columns stack into a
+       single readable list rather than squeezing into unusable slivers --
+       the tap-to-place path still works fully, drag just gets longer. */
+    .group-grid { grid-template-columns: 1fr; }
+    .new-group-btn { min-height: 56px; }
+    .group-col { min-height: 0; }
+    .naming-row { grid-template-columns: 1fr; gap: 8px; }
+    .deck-strip { max-height: 168px; }
+  }
+  @media (max-width: 480px) {
+    .brand h1 { font-size: 22px; }
+    .scenario { font-size: 21px; }
+    .card { padding: 18px; }
+    .board-deck { top: calc(env(safe-area-inset-top, 0px) + 60px); }
+  }
+</style>
+
+<div id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // doTERRA wordmark, pulled from the doTERRA Pure - Base 1.2.2 Figma
+  // library's "Logo" component. Fill swapped for currentColor so it
+  // follows --ink (and stays legible across the light/dark toggle).
+  var LOGO_SVG = '<svg width="115" height="32" viewBox="0 0 115 32" fill="none" xmlns="http://www.w3.org/2000/svg">\n<path fill-rule="evenodd" clip-rule="evenodd" d="M12.8762 26.1912C12.8762 26.2753 12.8582 26.3494 12.8216 26.4117C12.7856 26.4746 12.7235 26.5246 12.6352 26.561C12.5469 26.5974 12.4295 26.6263 12.2849 26.6474C12.1396 26.6686 11.9636 26.6792 11.7568 26.6792C11.5389 26.6792 11.3577 26.6686 11.2125 26.6474C11.0672 26.6263 10.9481 26.5974 10.8546 26.561C10.7605 26.5246 10.6937 26.4746 10.6525 26.4117C10.6106 26.3494 10.5897 26.2753 10.5897 26.1912V24.3183C9.85426 25.1266 9.08918 25.7556 8.29621 26.2071C7.50325 26.6574 6.63476 26.8837 5.69192 26.8837C4.66542 26.8837 3.78822 26.6815 3.06264 26.2777C2.33707 25.8738 1.74917 25.3283 1.29779 24.6411C0.847572 23.9544 0.518186 23.1461 0.310796 22.2173C0.103405 21.2891 0 20.3109 0 19.2821C0 18.0658 0.129547 16.9671 0.38864 15.9854C0.647733 15.0048 1.03056 14.1683 1.53887 13.4758C2.0466 12.7827 2.67633 12.2507 3.42863 11.878C4.18035 11.5071 5.04825 11.3195 6.03408 11.3195C6.85261 11.3195 7.60201 11.5006 8.28111 11.8627C8.95963 12.2243 9.63118 12.7569 10.2952 13.4599V6.5038C10.2952 6.43031 10.3126 6.36036 10.3486 6.29099C10.3852 6.22339 10.4555 6.17048 10.5595 6.13403C10.6623 6.09758 10.7948 6.06643 10.9551 6.03939C11.116 6.01352 11.3211 6 11.5697 6C11.8288 6 12.0414 6.01352 12.2076 6.03939C12.3732 6.06643 12.5027 6.09758 12.5962 6.13403C12.6898 6.17048 12.7595 6.22339 12.8065 6.29099C12.853 6.36036 12.8762 6.43031 12.8762 6.5038V26.1912ZM10.2952 16.2294C9.59981 15.3587 8.92884 14.695 8.28111 14.2389C7.63279 13.7833 6.9566 13.5546 6.25135 13.5546C5.59839 13.5546 5.0436 13.7116 4.587 14.0272C4.13097 14.3411 3.76092 14.7556 3.4751 15.2694C3.19045 15.7838 2.98306 16.3657 2.85351 17.0171C2.7228 17.6673 2.65948 18.328 2.65948 18.9999C2.65948 19.713 2.71351 20.4108 2.82214 21.0921C2.93136 21.7746 3.12016 22.3807 3.39029 22.9104C3.65984 23.4401 4.01711 23.8651 4.46326 24.1849C4.90883 24.5047 5.46826 24.6646 6.14272 24.6646C6.48488 24.6646 6.81311 24.6175 7.12971 24.5229C7.44574 24.4282 7.77047 24.2713 8.10218 24.0508C8.43389 23.8304 8.7807 23.5447 9.14436 23.1931C9.50686 22.8416 9.88969 22.4089 10.2952 21.8946V16.2294Z" fill="currentColor"/>\n<path fill-rule="evenodd" clip-rule="evenodd" d="M30.7903 18.7104C30.7903 19.8643 30.6398 20.9272 30.3401 21.8972C30.0386 22.8677 29.5907 23.7048 28.994 24.4067C28.3986 25.1104 27.6521 25.6589 26.7552 26.0521C25.8582 26.4454 24.8189 26.6418 23.6373 26.6418C22.4859 26.6418 21.4832 26.4689 20.6281 26.1227C19.7724 25.7764 19.0596 25.2726 18.4892 24.6119C17.9193 23.9511 17.494 23.1487 17.2146 22.204C16.934 21.2599 16.794 20.19 16.794 18.9931C16.794 17.8397 16.9421 16.7781 17.2373 15.8069C17.5335 14.837 17.9785 14.0004 18.5751 13.2973C19.1706 12.5943 19.9147 12.0487 20.8065 11.6602C21.6982 11.2728 22.7404 11.0782 23.9319 11.0782C25.0832 11.0782 26.0859 11.251 26.9411 11.5973C27.7973 11.9435 28.5096 12.4467 29.08 13.1081C29.6499 13.7694 30.0775 14.5718 30.3633 15.5153C30.6474 16.46 30.7903 17.5252 30.7903 18.7104ZM28.1314 18.8832C28.1314 18.1178 28.0611 17.3941 27.9199 16.7122C27.7776 16.0291 27.5446 15.4319 27.2211 14.9175C26.8969 14.4043 26.4571 13.9975 25.9024 13.6983C25.3487 13.3996 24.658 13.2497 23.8314 13.2497C23.0674 13.2497 22.411 13.3861 21.8626 13.6589C21.313 13.9316 20.8605 14.3179 20.5044 14.8152C20.1494 15.3137 19.8851 15.9039 19.7126 16.5864C19.54 17.2678 19.4535 18.0126 19.4535 18.8203C19.4535 19.5969 19.5238 20.3264 19.6661 21.0083C19.8067 21.6902 20.042 22.2851 20.3714 22.7942C20.7013 23.3027 21.1434 23.7072 21.6976 24.0058C22.2524 24.305 22.942 24.4543 23.7686 24.4543C24.5215 24.4543 25.1756 24.3186 25.7298 24.0452C26.2846 23.773 26.7395 23.3897 27.0956 22.8965C27.4511 22.4033 27.7119 21.816 27.8798 21.1341C28.0471 20.4522 28.1314 19.7021 28.1314 18.8832Z" fill="currentColor"/>\n<path d="M46.5893 7.33721C46.5893 7.53649 46.5782 7.70991 46.5573 7.85629C46.537 8.00325 46.5039 8.12141 46.4562 8.21018C46.4098 8.30012 46.3534 8.36537 46.286 8.40711C46.2175 8.45003 46.1425 8.47001 46.06 8.47001H40.4001V26.127C40.4001 26.211 40.3792 26.2845 40.3373 26.3474C40.2961 26.4103 40.2235 26.4603 40.1195 26.4967C40.0161 26.5332 39.8784 26.5649 39.707 26.5914C39.5362 26.6173 39.3207 26.6308 39.0622 26.6308C38.813 26.6308 38.6009 26.6173 38.4243 26.5914C38.2483 26.5649 38.1077 26.5332 38.0049 26.4967C37.9015 26.4603 37.8283 26.4103 37.7871 26.3474C37.7452 26.2845 37.7243 26.211 37.7243 26.127V8.47001H32.0644C31.9813 8.47001 31.9063 8.45003 31.8384 8.40711C31.771 8.36537 31.7164 8.30012 31.6751 8.21018C31.6339 8.12141 31.5996 8.00325 31.5741 7.85629C31.5479 7.70991 31.5357 7.53649 31.5357 7.33721C31.5357 7.13792 31.5479 6.96156 31.5741 6.8099C31.5996 6.65764 31.6339 6.53419 31.6751 6.44013C31.7164 6.34549 31.771 6.27729 31.8384 6.23497C31.9063 6.19441 31.9813 6.17265 32.0644 6.17265H46.06C46.1425 6.17265 46.2175 6.19441 46.286 6.23497C46.3534 6.27729 46.4098 6.34549 46.4562 6.44013C46.5039 6.53419 46.537 6.65764 46.5573 6.8099C46.5782 6.96156 46.5893 7.13792 46.5893 7.33721Z" fill="currentColor"/>\n<path fill-rule="evenodd" clip-rule="evenodd" d="M110.821 8.48353H111.182V7.85864H111.354C111.553 7.85864 111.648 7.93565 111.676 8.10848C111.684 8.13747 111.691 8.16525 111.698 8.19169C111.734 8.33251 111.76 8.43553 111.8 8.48353H112.19C112.151 8.43533 112.124 8.33951 112.076 8.09907C112.029 7.88744 111.942 7.76223 111.791 7.71461V7.69462C111.981 7.63701 112.114 7.50239 112.114 7.32016C112.114 7.17496 112.047 7.05033 111.962 6.98273C111.847 6.9063 111.715 6.8581 111.42 6.8581C111.163 6.8581 110.963 6.88632 110.821 6.91512V8.48353ZM111.363 7.59822H111.192V7.14674C111.23 7.13616 111.296 7.12734 111.392 7.12734C111.62 7.12734 111.724 7.22375 111.724 7.36836C111.724 7.53179 111.562 7.59822 111.363 7.59822Z" fill="currentColor"/>\n<path fill-rule="evenodd" clip-rule="evenodd" d="M113.026 7.66641C113.026 6.78991 112.333 6.08859 111.439 6.08859H111.429C110.536 6.08859 109.823 6.78991 109.823 7.66641C109.823 8.56054 110.536 9.25363 111.429 9.25363C112.333 9.25363 113.026 8.56054 113.026 7.66641ZM110.222 7.66641C110.222 6.97391 110.736 6.40604 111.42 6.40604H111.429C112.124 6.40604 112.628 6.97391 112.628 7.66641C112.628 8.36831 112.124 8.93619 111.439 8.92619C110.736 8.92619 110.222 8.36831 110.222 7.66641Z" fill="currentColor"/>\n<path fill-rule="evenodd" clip-rule="evenodd" d="M114.531 26.1349C114.524 25.9932 114.48 25.8074 114.398 25.5764L107.649 6.66023C107.607 6.54501 107.55 6.44742 107.478 6.36865C107.405 6.29046 107.301 6.2305 107.166 6.18876C107.032 6.14644 106.856 6.11704 106.638 6.10117C106.42 6.08647 106.145 6.07766 105.813 6.07766C105.503 6.07766 105.246 6.08647 105.044 6.10117C104.841 6.11704 104.675 6.14644 104.546 6.18876C104.416 6.2305 104.318 6.28811 104.251 6.36101C104.183 6.43449 104.129 6.52972 104.087 6.64435L97.3377 25.5611C97.2552 25.791 97.211 25.9779 97.2058 26.119C97.2006 26.2607 97.2366 26.3688 97.3144 26.4423C97.3929 26.5158 97.5271 26.5652 97.7193 26.5916C97.911 26.6175 98.1568 26.6304 98.4583 26.6304C98.7482 26.6304 98.9834 26.6198 99.1653 26.5993C99.3465 26.5775 99.4865 26.544 99.5853 26.497C99.6835 26.4494 99.759 26.3923 99.8107 26.3236C99.8624 26.256 99.9036 26.1748 99.935 26.0796L101.584 21.1857H109.95L111.676 26.1431C111.717 26.2372 111.761 26.3165 111.809 26.3788C111.855 26.4423 111.928 26.4923 112.026 26.5281C112.125 26.5652 112.27 26.5916 112.462 26.6069C112.654 26.6228 112.91 26.6304 113.232 26.6304C113.552 26.6304 113.809 26.6198 114.002 26.5993C114.193 26.5775 114.33 26.5311 114.413 26.4576C114.496 26.3841 114.535 26.2765 114.531 26.1349ZM105.72 8.8794H105.736L109.25 19.0294H102.252L105.72 8.8794Z" fill="currentColor"/>\n<path fill-rule="evenodd" clip-rule="evenodd" d="M95.2737 26.348C95.3051 26.2851 95.3202 26.211 95.3202 26.1269C95.3202 26.0429 95.2993 25.9247 95.2586 25.7724C95.2162 25.6214 95.1232 25.3557 94.978 24.9782L93.1748 20.4935C92.9668 19.9797 92.7589 19.5176 92.5521 19.1085C92.3441 18.6987 92.1245 18.3372 91.8915 18.0227C91.658 17.7082 91.4071 17.4378 91.1375 17.212C90.8674 16.9857 90.567 16.8005 90.2347 16.653C90.8261 16.4431 91.3606 16.1868 91.8369 15.8817C92.3133 15.5784 92.7228 15.218 93.065 14.8041C93.4072 14.3897 93.6692 13.913 93.851 13.3721C94.0317 12.8319 94.1229 12.2211 94.1229 11.5392C94.1229 10.8355 94.0224 10.193 93.8191 9.6104C93.6169 9.02901 93.3137 8.51169 92.9099 8.06139C92.5056 7.60991 92.0048 7.23721 91.41 6.94328C90.8128 6.64994 90.1267 6.43537 89.3488 6.2984C89.0787 6.26724 88.7755 6.23844 88.4391 6.21198C88.1016 6.18553 87.6798 6.1726 87.1715 6.1726H82.8947C82.656 6.1726 82.4312 6.25372 82.2185 6.41656C82.0059 6.5794 81.8996 6.86451 81.8996 7.27425V26.1269C81.8996 26.211 81.9205 26.2851 81.9618 26.348C82.003 26.4103 82.0756 26.4597 82.1796 26.4973C82.2836 26.5331 82.4207 26.5655 82.5915 26.5913C82.7629 26.6178 82.9772 26.6301 83.2369 26.6301C83.496 26.6301 83.7115 26.6178 83.8829 26.5913C84.0531 26.5655 84.1879 26.5331 84.286 26.4973C84.386 26.4597 84.458 26.4103 84.5039 26.348C84.5504 26.2851 84.5742 26.211 84.5742 26.1269V17.456H86.3629C86.9746 17.456 87.4974 17.5471 87.9337 17.7317C88.3688 17.9145 88.7476 18.172 89.0688 18.5018C89.3895 18.8333 89.6678 19.2266 89.9007 19.6828C90.1337 20.139 90.3591 20.6404 90.5769 21.186L92.4277 25.9853C92.4684 26.1111 92.5189 26.2157 92.5753 26.3003C92.6322 26.3838 92.713 26.4502 92.8164 26.4973C92.9204 26.5443 93.0575 26.5784 93.2283 26.5996C93.3996 26.6201 93.6198 26.6301 93.8894 26.6301C94.2007 26.6301 94.4494 26.6201 94.6358 26.5996C94.8235 26.5784 94.9681 26.5467 95.0715 26.5049C95.1749 26.4626 95.2423 26.4103 95.2737 26.348ZM90.7634 9.79969C91.1166 10.3505 91.2926 11.0248 91.2926 11.8225C91.2926 12.3151 91.2124 12.7713 91.0515 13.1905C90.8906 13.6108 90.6391 13.9759 90.2975 14.2845C89.9553 14.5949 89.5272 14.8359 89.0148 15.0087C88.5018 15.1821 87.8919 15.268 87.1866 15.268H84.5742V8.40705H86.8299C87.3574 8.40705 87.7856 8.42292 88.1132 8.45467C88.4391 8.48524 88.7313 8.53873 88.991 8.61222C89.82 8.85265 90.4119 9.24946 90.7634 9.79969Z" fill="currentColor"/>\n<path fill-rule="evenodd" clip-rule="evenodd" d="M78.2436 26.348C78.2744 26.2851 78.2901 26.211 78.2901 26.1275C78.2901 26.0434 78.2697 25.9247 78.2279 25.773C78.1861 25.6214 78.0937 25.3562 77.9473 24.9782L76.1441 20.4929C75.9362 19.9797 75.7293 19.5182 75.522 19.109C75.3146 18.6987 75.0944 18.3378 74.8609 18.0227C74.6273 17.7082 74.3764 17.4378 74.1068 17.2126C73.8373 16.9863 73.5364 16.8005 73.2052 16.6536C73.796 16.4431 74.3299 16.1868 74.8068 15.8817C75.2832 15.5784 75.6928 15.2186 76.0355 14.8041C76.3777 14.3897 76.6385 13.913 76.8209 13.3721C77.001 12.8319 77.0922 12.2211 77.0922 11.5392C77.0922 10.8361 76.9917 10.1936 76.7895 9.6104C76.5868 9.02842 76.2841 8.51169 75.8798 8.06139C75.4755 7.60991 74.9753 7.23721 74.3793 6.94328C73.7821 6.64994 73.0966 6.43537 72.3187 6.2984C72.0492 6.26724 71.7454 6.23844 71.4084 6.21139C71.0709 6.18553 70.6491 6.1726 70.1414 6.1726H65.8623C65.6236 6.1726 65.3987 6.25372 65.1861 6.41656C64.9741 6.57881 64.8678 6.86451 64.8678 7.27483V26.1275C64.8678 26.211 64.8887 26.2851 64.9299 26.348C64.9706 26.4103 65.0432 26.4602 65.1478 26.4973C65.2512 26.5331 65.3889 26.5649 65.5597 26.5913C65.731 26.6178 65.946 26.6301 66.2045 26.6301C66.4636 26.6301 66.6803 26.6178 66.8528 26.5913C67.023 26.5649 67.1578 26.5331 67.2565 26.4973C67.3553 26.4602 67.4279 26.4103 67.4744 26.348C67.5209 26.2851 67.5447 26.211 67.5447 26.1275V17.4566H69.3334C69.9445 17.4566 70.4673 17.5471 70.903 17.7317C71.3381 17.9151 71.7169 18.172 72.0381 18.5024C72.36 18.8333 72.6377 19.2272 72.8706 19.6828C73.1036 20.139 73.3295 20.641 73.5474 21.186L75.3976 25.9858C75.4389 26.1116 75.4888 26.2163 75.5452 26.3003C75.6027 26.3844 75.6829 26.4502 75.7863 26.4973C75.8903 26.5443 76.0274 26.5784 76.1982 26.5996C76.3695 26.6201 76.5891 26.6301 76.8598 26.6301C77.1701 26.6301 77.4193 26.6201 77.6052 26.5996C77.7928 26.5784 77.9375 26.5467 78.0409 26.5049C78.1448 26.4626 78.2116 26.4103 78.2436 26.348ZM73.7333 9.80028C74.0859 10.3505 74.2619 11.0254 74.2619 11.8219C74.2619 12.3157 74.1818 12.7713 74.0208 13.1911C73.8605 13.6114 73.609 13.9753 73.2674 14.2845C72.9252 14.5949 72.4971 14.8359 71.9841 15.0093C71.4712 15.1821 70.8618 15.268 70.1571 15.268H67.5447V8.40705H69.7993C70.3279 8.40705 70.7549 8.42351 71.0825 8.45467C71.4084 8.48583 71.7006 8.53815 71.9603 8.61163C72.7899 8.85324 73.3812 9.24887 73.7333 9.80028Z" fill="currentColor"/>\n<path d="M60.8695 25.9146C60.8904 25.7736 60.9009 25.6072 60.9009 25.4185C60.9009 25.2092 60.8904 25.0329 60.8695 24.8918C60.8486 24.7495 60.8131 24.6349 60.7614 24.5461C60.7091 24.4568 60.6493 24.3909 60.5819 24.3492C60.5151 24.3069 60.4396 24.2857 60.3565 24.2857H52.3798V17.0003H59.1296C59.2127 17.0003 59.287 16.9809 59.3544 16.9445C59.4212 16.9075 59.4782 16.8475 59.5246 16.7634C59.5717 16.6794 59.6054 16.5694 59.6257 16.4331C59.6466 16.2967 59.6565 16.1338 59.6565 15.9451C59.6565 15.7458 59.6466 15.573 59.6257 15.4255C59.6054 15.2791 59.5717 15.1644 59.5246 15.0792C59.4782 14.9963 59.4212 14.9299 59.3544 14.8829C59.287 14.8358 59.2127 14.8117 59.1296 14.8117H52.3798V8.42287H60.2473C60.331 8.42287 60.4053 8.4017 60.4739 8.35997C60.5413 8.31823 60.5953 8.25239 60.6371 8.16303C60.6778 8.07427 60.7121 7.95846 60.7382 7.81737C60.7638 7.6757 60.7765 7.51051 60.7765 7.32122C60.7765 7.11135 60.7638 6.93617 60.7382 6.79391C60.7121 6.65223 60.6778 6.53466 60.6371 6.44001C60.5953 6.34596 60.5413 6.27718 60.4739 6.23544C60.4053 6.1937 60.331 6.17254 60.2473 6.17254H50.7004C50.4622 6.17254 50.2374 6.25366 50.0242 6.41591C49.8115 6.57934 49.7058 6.86504 49.7058 7.27419V25.4344C49.7058 25.8447 49.8115 26.1292 50.0242 26.2921C50.2374 26.4555 50.4622 26.536 50.7004 26.536H60.3565C60.4396 26.536 60.5151 26.5154 60.5819 26.4731C60.6493 26.432 60.7091 26.3632 60.7614 26.2685C60.8131 26.1745 60.8486 26.0563 60.8695 25.9146Z" fill="currentColor"/>\n<path fill-rule="evenodd" clip-rule="evenodd" d="M19.7645 8.38259C19.2173 8.38494 19.2202 7.59838 19.2191 7.278C19.2173 6.93704 19.2173 6.17282 19.7645 6.17282H27.8133C28.3617 6.17282 28.3617 6.93704 28.3594 7.278C28.3576 7.59838 28.3617 8.38494 27.8133 8.38259H19.7645Z" fill="currentColor"/>\n</svg>';
+
+  // Sun / moon glyphs for the theme toggle, shown as an icon-only button
+  // rather than a text label. Each shows the mode a click switches TO.
+  var SUN_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+  var MOON_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+
+  // Handoff graphic: a person glyph per party plus a direction arrow,
+  // used on the moderator<->participant handoff screens.
+  var PERSON_ICON = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+  var HANDOFF_ARROW_ICON = '<svg width="30" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="20" y2="12"/><polyline points="14 5 21 12 14 19"/></svg>';
+  var CHEVRON_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
+  var TRASH_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+  var SPEECH_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
+  var EXPORT_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  var KEYBOARD_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="6" y1="9" x2="6" y2="9"/><line x1="10" y1="9" x2="10" y2="9"/><line x1="14" y1="9" x2="14" y2="9"/><line x1="18" y1="9" x2="18" y2="9"/><line x1="7" y1="14" x2="17" y2="14"/></svg>';
+  var CLOSE_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  var GRIP_ICON = '<svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="2" r="1.3"/><circle cx="7.5" cy="2" r="1.3"/><circle cx="2.5" cy="7" r="1.3"/><circle cx="7.5" cy="7" r="1.3"/><circle cx="2.5" cy="12" r="1.3"/><circle cx="7.5" cy="12" r="1.3"/></svg>';
+  var PLUS_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+
+  function renderHandoffGraphic(receiving) {
+    var moderatorReceiving = receiving === "moderator";
+    return el("div", { class: "handoff-graphic" }, [
+      el("div", { class: "handoff-party" + (moderatorReceiving ? "" : " dim") }, [
+        el("div", { class: "handoff-icon", html: PERSON_ICON }),
+        el("div", { class: "handoff-label" }, ["Moderator"])
+      ]),
+      el("div", { class: "handoff-arrow" + (moderatorReceiving ? " reverse" : ""), html: HANDOFF_ARROW_ICON }),
+      el("div", { class: "handoff-party" + (moderatorReceiving ? " dim" : "") }, [
+        el("div", { class: "handoff-icon", html: PERSON_ICON }),
+        el("div", { class: "handoff-label" }, ["Participant"])
+      ])
+    ]);
+  }
+
+  // ---------- Data: the default study ----------
+  // The card deck is the destination pages of the proposed storefront IA,
+  // deduplicated and trimmed to 30 so a moderated in-person session stays
+  // inside the window before sorting fatigue starts distorting the back
+  // half of the deck.
+  var DEFAULT_CARDS = [
+    "Essential Oils", "Personal Care", "Supplements", "Accessories", "Collections & Enrollment",
+    "Limited Time Offers", "New Products", "Best Sellers", "Exclusive Kits",
+    "Diffusion", "Beauty & Self Care", "Meditation", "Cooking", "Created for Him",
+    "What Are Essential Oils", "How to Use Essential Oils", "Essential Oil Safety",
+    "Certified Pure Testing Grade", "Source to You", "The doTERRA Difference",
+    "Business Opportunity", "Path to $500", "Recipes", "Healthy Living",
+    "Loyalty Rewards Program", "Wholesale Membership",
+    "Our Story", "Founders", "Convention", "Healing Hands Foundation"
+  ];
+
+  // Seeded from the Wayfinding Trial's proposed IA so the two studies are
+  // directly comparable. This is exactly what deriveCategoriesFromTree()
+  // returns for that tool's current navigation structure: its filing
+  // level, the branches its destination pages actually sit under. Kept
+  // verbatim rather than hand-merged so that re-deriving after the tree
+  // changes is a like-for-like replacement, not a re-judgement.
+  var DEFAULT_CATEGORIES = [
+    "Shop by Category", "Shop by Goal", "Shop: Highlights",
+    "Learn: Essential Oils", "Learn: Resources", "Learn: Business", "Learn: Blog & Resources",
+    "Rewards",
+    "Our Story: About doTERRA", "Our Story: Events", "Our Story: The doTERRA Difference"
+  ];
+
+  var DEFAULT_SORTS = [
+    {
+      prompt: "Put each of these into the group where you'd expect to find it on the doTERRA website. Add your own group if none of them fit.",
+      tests: "Whether the proposed storefront categories match how customers actually group products and content",
+      mode: "hybrid",
+      cards: DEFAULT_CARDS,
+      categories: DEFAULT_CATEGORIES,
+      allowOther: true
+    }
+  ];
+
+  var DEFAULT_STUDY = {
+    sorts: DEFAULT_SORTS,
+    shuffleCards: true,
+    agreementStrong: 60,
+    agreementWeak: 35,
+    deckWarnAt: 30
+  };
+
+  var OTHER_ID = "__other__";
+  var OTHER_LABEL = "Other / doesn't fit";
+
+  // ---------- State ----------
+  var db = null, downloads = null, dbReady = false, downloadsReady = false;
+  var view = "session"; // "session" | "ledger" | "content"
+  var phase = "setup";  // setup | preview | brief | sorting | naming | return | capture | done
+  var participant = "";
+  var practiceRun = false;
+  var participantInternal = false; // true = doTERRA staff member, false = customer/external
+  var sortIndex = 0;
+  var startedAt = 0;
+  var timerHandle = null;
+  var confidence = null;
+  var results = [];      // this participant's saved sort results
+  var ledgerDocs = [];
+  var ledgerUnsub = null;
+  var theme = "light";
+
+  // --- Live board state for the sort in progress ---
+  var deckOrder = [];     // card labels in the order this participant sees them
+  var groups = [];        // [{ id, name, fixed }] -- fixed ones come from the study's categories
+  var placements = {};    // card label -> group id (absent = still in the deck)
+  var otherReasons = {};  // card label -> why it didn't fit (only for cards in the Other bay)
+  var selectedCard = null;// card picked up by tap, awaiting a destination
+  var moveTrail = [];     // [{ at, card, from, to }] -- every placement, in order
+  var customGroupSeq = 0;
+  var justPlaced = null;  // card label to flash on the next render
+  var confirmFinishSort = false; // participant is confirming finishing with cards still in the deck
+
+  // The live study. Defaults to the built-in above, but the moderator can
+  // replace it from the Content tab; when db is available the override is
+  // shared to every device via config/content.
+  var activeStudy = DEFAULT_STUDY;
+  var configUnsub = null;
+
+  // Content-editor draft buffers (kept as plain strings so typing never
+  // fights a re-render) and confirmation state for destructive actions.
+  var sortsDraft = null;
+  var strongDraft = null;
+  var weakDraft = null;
+  var deckWarnDraft = null;
+  var shuffleDraft = null;
+  var treeImportDraft = "";
+  var treeImportResult = null;
+  var treeImportError = null;
+  var contentUpdatedAt = null;
+  var contentError = null;
+  var contentWarning = null;
+  var confirmClearAll = false;
+  var confirmDeleteId = null;
+  var confirmRetake = false;     // moderator is confirming a retake of the just-logged sort
+  var retakePending = false;     // the upcoming handoff is a retake, not the next sort
+  var confirmEndSession = false; // moderator is confirming an early end to the session
+  var endedEarly = false;        // the session stopped before every sort ran
+  var expandedSessions = {};     // doc._id -> true when its result detail is expanded
+  var expandedPairs = false;     // ledger: show every card pair rather than the top slice
+  var openExportMenu = null;     // "header" | doc._id | null
+  var onboardStep = null;        // null | 1..n -- floating tour step
+  var onboardPauseStart = 0;     // Date.now() while an onboard step covers a timing screen
+  var lastPhaseKey = null;       // "view:phase" from the previous render, gates the entrance animation
+  var pendingFocus = null;       // function returning an element to focus right after the next render()
+  var shortcutsOpen = false;
+
+  // Content versioning + configurable agreement bands, both moderator-set
+  // from the Content tab and shared via config/content alongside the study.
+  var activeContentVersion = 1;
+
+  // Incremental session persistence: the in-progress session's own doc id,
+  // created as soon as the session starts so a crash mid-session still
+  // leaves a resumable record rather than losing everything.
+  var sessionDocId = null;
+  var sessionStartedAtIso = null;
+  var sessionContentVersion = null;
+  var confirmDiscardResumeId = null;
+
+  function el(tag, attrs, children) {
+    var e = document.createElement(tag);
+    attrs = attrs || {};
+    for (var k in attrs) {
+      if (attrs[k] == null) continue; // skip null/undefined so conditional attrs (e.g. id) can be omitted
+      if (k === "class") e.className = attrs[k];
+      else if (k === "html") e.innerHTML = attrs[k];
+      else if (k.indexOf("on") === 0) e.addEventListener(k.slice(2), attrs[k]);
+      else e.setAttribute(k, attrs[k]);
+    }
+    (children || []).forEach(function (c) {
+      if (c == null) return;
+      e.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    });
+    return e;
+  }
+
+  // The small "↵" badge dropped onto each screen's one .cta-primary button
+  // (see the global Enter handler below) so the shortcut is visible right
+  // on the control instead of hidden in the moderator-only shortcuts panel.
+  function ctaKey() {
+    return el("kbd", { class: "cta-key", "aria-hidden": "true" }, ["↵"]);
+  }
+
+  function fmtTime(ms) {
+    var s = Math.floor(ms / 1000);
+    var m = Math.floor(s / 60);
+    s = s % 60;
+    return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+  }
+
+  function plural(n, word, suffix) {
+    return n + " " + word + (n === 1 ? "" : (suffix || "s"));
+  }
+
+  function median(nums) {
+    if (!nums.length) return 0;
+    var sorted = nums.slice().sort(function (a, b) { return a - b; });
+    return sorted[Math.floor(sorted.length / 2)];
+  }
+
+  // Participant-created groups are free text, so "Skin stuff" and
+  // "skin  stuff" have to count as the same group when tallying across
+  // sessions. Fixed categories go through this too, harmlessly.
+  function normaliseName(s) {
+    return String(s == null ? "" : s).trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
+  function currentSort() {
+    return (activeStudy.sorts || DEFAULT_SORTS)[sortIndex] || (activeStudy.sorts || DEFAULT_SORTS)[0];
+  }
+  function sortCount() {
+    return (activeStudy.sorts || DEFAULT_SORTS).length;
+  }
+
+  function copyToClipboard(text, btn, textareaEl) {
+    var original = btn.textContent;
+    function done(ok) {
+      btn.textContent = ok ? "Copied" : "Press Ctrl/Cmd+C";
+      setTimeout(function () { btn.textContent = original; }, 1500);
+    }
+    function fallbackCopy() {
+      // No visible textarea to select (e.g. a ledger export button) --
+      // use a throwaway offscreen one so execCommand still has a selection.
+      var target = textareaEl;
+      var temp = null;
+      if (!target) {
+        temp = document.createElement("textarea");
+        temp.value = text;
+        temp.style.position = "fixed";
+        temp.style.top = "-1000px";
+        temp.style.left = "-1000px";
+        document.body.appendChild(temp);
+        target = temp;
+      }
+      target.focus();
+      target.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (temp) temp.remove();
+      done(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  }
+
+  // Describes the agreement bands in the moderator's own words, reflecting
+  // whatever thresholds are set on the Content tab.
+  function agreementRuleText() {
+    return "A card reads as Strong when at least " + activeStudy.agreementStrong + "% of participants put it in the same group, Contested below " +
+      activeStudy.agreementWeak + "%, and Mixed in between.";
+  }
+  function agreementBand(pct) {
+    if (pct == null) return "neutral";
+    if (pct >= activeStudy.agreementStrong) return "strong";
+    if (pct < activeStudy.agreementWeak) return "contested";
+    return "mixed";
+  }
+  function agreementLabel(pct) {
+    if (pct == null) return "No data";
+    var band = agreementBand(pct);
+    return band === "strong" ? "Strong" : band === "contested" ? "Contested" : "Mixed";
+  }
+
+  // ---------- Local storage fallback ----------
+  // When the shared db capability isn't available -- the file opened
+  // directly, or served from a plain local server, rather than run as the
+  // published Artifact -- everything that would otherwise go straight to
+  // `db` falls back to this browser's own localStorage instead. Not synced
+  // to any other device, but not silently discarded either.
+  var LOCAL_LEDGER_KEY = "groupingStudy.ledger.v1";
+  var LOCAL_CONTENT_KEY = "groupingStudy.content.v1";
+  var localStorageOk = false;
+  try {
+    var _lsProbe = "__groupingStudy_probe__";
+    window.localStorage.setItem(_lsProbe, "1");
+    window.localStorage.removeItem(_lsProbe);
+    localStorageOk = true;
+  } catch (e) { localStorageOk = false; }
+
+  // "shared" -- a live, cross-device ledger (the published Artifact).
+  // "local"  -- this browser's own storage only.
+  // "none"   -- neither; nothing persists past this page view.
+  function storageMode() {
+    if (dbReady && db) return "shared";
+    if (localStorageOk) return "local";
+    return "none";
+  }
+
+  function localLedgerRead() {
+    try {
+      var raw = window.localStorage.getItem(LOCAL_LEDGER_KEY);
+      var docs = raw ? JSON.parse(raw) : [];
+      return Array.isArray(docs) ? docs : [];
+    } catch (e) { return []; }
+  }
+  function localLedgerWrite(docs) {
+    try { window.localStorage.setItem(LOCAL_LEDGER_KEY, JSON.stringify(docs)); } catch (e) {}
+  }
+  // No live listener needed for a single browser's own storage -- just
+  // re-read it into ledgerDocs on demand, sorted the same way the shared
+  // ledger's query would be (most recently finished/updated first).
+  function refreshLocalLedger() {
+    var docs = localLedgerRead();
+    docs.sort(function (a, b) {
+      var ta = a.finishedAt || a.updatedAt || "";
+      var tb = b.finishedAt || b.updatedAt || "";
+      if (ta === tb) return 0;
+      return ta < tb ? 1 : -1;
+    });
+    ledgerDocs = docs;
+  }
+
+  // ---------- Capability bootstrap ----------
+  function initCapabilities() {
+    if (window.claude && window.claude.use) {
+      window.claude.use("db").then(function (d) {
+        db = d; dbReady = !!d; subscribeConfig(); subscribeLedger(); render();
+      }).catch(function () { subscribeConfig(); subscribeLedger(); render(); });
+      window.claude.use("downloads").then(function (d) { downloads = d; downloadsReady = !!d; render(); }).catch(function () {});
+    } else {
+      // No Artifact runtime here at all (opened directly, or served from a
+      // plain local server) -- go straight to the local-storage fallback
+      // rather than leaving everything unsubscribed.
+      subscribeConfig();
+      subscribeLedger();
+    }
+  }
+
+  // ---------- Hot state (survive a republish mid-session) ----------
+  function snapshotState() {
+    return { view: view, phase: phase, participant: participant, practiceRun: practiceRun,
+      participantInternal: participantInternal, sortIndex: sortIndex, startedAt: startedAt,
+      confidence: confidence, results: results, theme: theme, activeStudy: activeStudy,
+      activeContentVersion: activeContentVersion, deckOrder: deckOrder, groups: groups,
+      placements: placements, otherReasons: otherReasons, moveTrail: moveTrail,
+      customGroupSeq: customGroupSeq, sessionDocId: sessionDocId,
+      sessionStartedAtIso: sessionStartedAtIso, sessionContentVersion: sessionContentVersion };
+  }
+  function restoreState(s) {
+    if (!s) return;
+    view = s.view || "session"; phase = s.phase || "setup"; participant = s.participant || "";
+    practiceRun = !!s.practiceRun; participantInternal = !!s.participantInternal;
+    sortIndex = s.sortIndex || 0; startedAt = s.startedAt || 0;
+    confidence = s.confidence || null; results = s.results || []; theme = s.theme || "light";
+    activeStudy = s.activeStudy || DEFAULT_STUDY;
+    activeContentVersion = s.activeContentVersion || 1;
+    deckOrder = s.deckOrder || []; groups = s.groups || []; placements = s.placements || {};
+    otherReasons = s.otherReasons || {}; moveTrail = s.moveTrail || [];
+    customGroupSeq = s.customGroupSeq || 0;
+    sessionDocId = s.sessionDocId || null;
+    sessionStartedAtIso = s.sessionStartedAtIso || null;
+    sessionContentVersion = s.sessionContentVersion || null;
+    if (phase === "sorting" && startedAt) startTimerTick();
+  }
+
+  // ---------- Study config (moderator-editable, shared via db when
+  // available, this browser's own storage otherwise) ----------
+  function applyConfigData(data) {
+    if (data && Array.isArray(data.sorts) && data.sorts.length) {
+      activeStudy = {
+        sorts: data.sorts,
+        shuffleCards: data.shuffleCards !== false,
+        agreementStrong: typeof data.agreementStrong === "number" ? data.agreementStrong : 60,
+        agreementWeak: typeof data.agreementWeak === "number" ? data.agreementWeak : 35,
+        deckWarnAt: typeof data.deckWarnAt === "number" ? data.deckWarnAt : 30
+      };
+    }
+    activeContentVersion = (data && data.version) || 1;
+    contentUpdatedAt = (data && data.updatedAt) || null;
+  }
+
+  function subscribeConfig() {
+    if (dbReady && db) {
+      if (configUnsub) return;
+      configUnsub = db.doc("config/content").onSnapshot(function (snap) {
+        applyConfigData(snap.exists ? snap.data() : null);
+        render();
+      }, function () {});
+      return;
+    }
+    if (localStorageOk) {
+      try {
+        var raw = window.localStorage.getItem(LOCAL_CONTENT_KEY);
+        applyConfigData(raw ? JSON.parse(raw) : null);
+      } catch (e) {}
+    }
+  }
+
+  function validateSorts(parsed) {
+    if (!Array.isArray(parsed) || !parsed.length) return "Sorts must be a non-empty JSON array.";
+    for (var i = 0; i < parsed.length; i++) {
+      var s = parsed[i];
+      var n = i + 1;
+      if (!s || typeof s !== "object") return "Sort " + n + " must be an object.";
+      if (typeof s.prompt !== "string" || !s.prompt.trim()) return "Sort " + n + " needs a prompt.";
+      if (["open", "closed", "hybrid"].indexOf(s.mode) === -1) return "Sort " + n + " needs a mode of \"open\", \"closed\" or \"hybrid\".";
+      if (!Array.isArray(s.cards) || s.cards.length < 2) return "Sort " + n + " needs a cards array with at least 2 cards.";
+      for (var c = 0; c < s.cards.length; c++) {
+        if (typeof s.cards[c] !== "string" || !s.cards[c].trim()) return "Sort " + n + ", card " + (c + 1) + " must be a non-empty string.";
+      }
+      var seenCard = {};
+      for (var d = 0; d < s.cards.length; d++) {
+        var key = normaliseName(s.cards[d]);
+        // Cards are identified by their label throughout (placements,
+        // agreement, co-occurrence), so a duplicate would silently merge
+        // two different things into one row.
+        if (seenCard[key]) return "Sort " + n + " has a duplicate card: \"" + s.cards[d] + "\". Card labels must be unique.";
+        seenCard[key] = true;
+      }
+      if (s.mode !== "open") {
+        if (!Array.isArray(s.categories) || !s.categories.length) return "Sort " + n + " is " + s.mode + ", so it needs a non-empty categories array.";
+        var seenCat = {};
+        for (var g = 0; g < s.categories.length; g++) {
+          if (typeof s.categories[g] !== "string" || !s.categories[g].trim()) return "Sort " + n + ", category " + (g + 1) + " must be a non-empty string.";
+          var ck = normaliseName(s.categories[g]);
+          if (seenCat[ck]) return "Sort " + n + " has a duplicate category: \"" + s.categories[g] + "\".";
+          seenCat[ck] = true;
+        }
+      }
+    }
+    return null;
+  }
+
+  function saveContent() {
+    contentWarning = null;
+    var parsed;
+    try {
+      parsed = JSON.parse(sortsDraft);
+    } catch (e) {
+      contentError = "Sorts aren't valid JSON: " + e.message;
+      render();
+      return;
+    }
+    var problem = validateSorts(parsed);
+    if (problem) { contentError = problem; render(); return; }
+
+    var strong = parseInt(strongDraft, 10);
+    var weak = parseInt(weakDraft, 10);
+    var warnAt = parseInt(deckWarnDraft, 10);
+    if (!(strong >= 0 && strong <= 100)) strong = 60;
+    if (!(weak >= 0 && weak <= 100)) weak = 35;
+    if (!(warnAt > 0)) warnAt = 30;
+    if (weak > strong) { contentError = "The Contested threshold can't be higher than the Strong threshold."; render(); return; }
+
+    // Warnings, not errors -- a long deck or an open sort is a legitimate
+    // choice, the moderator just needs to know what it costs.
+    var notes = [];
+    parsed.forEach(function (s, i) {
+      if (s.cards.length > warnAt) {
+        notes.push("Sort " + (i + 1) + " has " + s.cards.length + " cards, over the " + warnAt +
+          "-card guide. Expect fatigue to distort the back half of a moderated session.");
+      }
+      if (s.mode === "open") {
+        notes.push("Sort " + (i + 1) + " is an open sort. Per-card agreement only counts participants who happened to name a group the same way, so read it as directional at this sample size.");
+      }
+    });
+
+    contentError = null;
+    contentWarning = notes.length ? notes.join(" ") : null;
+    activeStudy = {
+      sorts: parsed,
+      shuffleCards: shuffleDraft !== false,
+      agreementStrong: strong,
+      agreementWeak: weak,
+      deckWarnAt: warnAt
+    };
+    activeContentVersion = (activeContentVersion || 0) + 1; // every save publishes a new version
+    contentUpdatedAt = new Date().toISOString();
+    sortsDraft = null; strongDraft = null; weakDraft = null; deckWarnDraft = null; shuffleDraft = null;
+    var payload = {
+      sorts: activeStudy.sorts, shuffleCards: activeStudy.shuffleCards,
+      agreementStrong: strong, agreementWeak: weak, deckWarnAt: warnAt,
+      version: activeContentVersion, updatedAt: contentUpdatedAt
+    };
+    if (dbReady && db) {
+      db.doc("config/content").set(payload).catch(function () {});
+    } else if (localStorageOk) {
+      try { window.localStorage.setItem(LOCAL_CONTENT_KEY, JSON.stringify(payload)); } catch (e) {}
+    }
+    render();
+  }
+
+  function resetContent() {
+    activeStudy = DEFAULT_STUDY;
+    activeContentVersion = (activeContentVersion || 0) + 1;
+    contentUpdatedAt = new Date().toISOString();
+    sortsDraft = null; strongDraft = null; weakDraft = null; deckWarnDraft = null; shuffleDraft = null;
+    contentError = null; contentWarning = null;
+    var payload = {
+      sorts: DEFAULT_STUDY.sorts, shuffleCards: DEFAULT_STUDY.shuffleCards,
+      agreementStrong: DEFAULT_STUDY.agreementStrong, agreementWeak: DEFAULT_STUDY.agreementWeak,
+      deckWarnAt: DEFAULT_STUDY.deckWarnAt,
+      version: activeContentVersion, updatedAt: contentUpdatedAt
+    };
+    if (dbReady && db) {
+      db.doc("config/content").set(payload).catch(function () {});
+    } else if (localStorageOk) {
+      try { window.localStorage.setItem(LOCAL_CONTENT_KEY, JSON.stringify(payload)); } catch (e) {}
+    }
+    render();
+  }
+
+  // Turns a Wayfinding Trial navigation structure into a category list for
+  // a closed or hybrid sort, so the card sort measures agreement against
+  // the exact structure the tree test is validating rather than a
+  // hand-retyped approximation that quietly drifts from it.
+  //
+  // It takes the tree's filing level: the branches its destination pages
+  // actually sit under. A top-level branch whose children are already
+  // leaves (an array) becomes a category in its own right; otherwise each
+  // of its sub-branches does, prefixed with the parent where the bare name
+  // would be ambiguous out of context.
+  function deriveCategoriesFromTree(tree) {
+    var out = [];
+    var seen = {};
+    function push(name) {
+      var key = normaliseName(name);
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      out.push(name);
+    }
+    Object.keys(tree).forEach(function (topKey) {
+      // "Footer: Our Story" and friends carry a placement prefix that means
+      // nothing to a participant sorting cards.
+      var top = topKey.replace(/^[A-Za-z]+:\s*/, "");
+      var node = tree[topKey];
+      if (Array.isArray(node) || node == null || typeof node !== "object") {
+        push(top);
+        return;
+      }
+      var subKeys = Object.keys(node);
+      if (!subKeys.length) { push(top); return; }
+      subKeys.forEach(function (sub) {
+        // A sub-branch is qualified with its parent unless it already
+        // carries the parent's name ("Shop by Category" needs no "Shop:").
+        // Applying one rule per parent rather than judging each name keeps
+        // a branch's children consistent with each other, which is what a
+        // participant reads them against. It also resolves the names that
+        // are genuinely ambiguous out of the nav: "Essential Oils" is both
+        // a Learn branch and a Shop destination, and "Resources" means
+        // nothing on a card-sort column header.
+        var carriesParent = normaliseName(sub).indexOf(normaliseName(top)) !== -1;
+        push(carriesParent ? sub : top + ": " + sub);
+      });
+    });
+    return out;
+  }
+
+  function runTreeImport() {
+    treeImportResult = null;
+    treeImportError = null;
+    var parsed;
+    try {
+      parsed = JSON.parse(treeImportDraft);
+    } catch (e) {
+      treeImportError = "That isn't valid JSON: " + e.message;
+      render();
+      return;
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      treeImportError = "A navigation structure should be a JSON object of branches.";
+      render();
+      return;
+    }
+    var derived = deriveCategoriesFromTree(parsed);
+    if (!derived.length) {
+      treeImportError = "No branches found in that structure.";
+      render();
+      return;
+    }
+    treeImportResult = derived;
+    render();
+  }
+
+  function toggleTheme() { theme = theme === "dark" ? "light" : "dark"; render(); }
+
+  // ---------- Timer ----------
+  function startTimerTick() {
+    if (timerHandle) clearInterval(timerHandle);
+    timerHandle = setInterval(function () {
+      var t = document.getElementById("timer-readout");
+      if (t) t.textContent = fmtTime(Date.now() - startedAt);
+    }, 250);
+  }
+  function stopTimerTick() { if (timerHandle) { clearInterval(timerHandle); timerHandle = null; } }
+
+  // The onboarding tour's board step appears on top of a sort that's
+  // already timing -- freeze the clock while it's up so reading the tour
+  // doesn't inflate the recorded time, then shift startedAt forward by
+  // however long it was up so both the live readout and the elapsed time
+  // saved in finishSort() pick up exactly where they left off.
+  function pauseTimerForOnboard() {
+    if (phase === "sorting" && startedAt && !onboardPauseStart) {
+      onboardPauseStart = Date.now();
+      stopTimerTick();
+    }
+  }
+  function resumeTimerFromOnboard() {
+    if (onboardPauseStart) {
+      startedAt += (Date.now() - onboardPauseStart);
+      onboardPauseStart = 0;
+      if (phase === "sorting") startTimerTick();
+    }
+  }
+
+  // ---------- Board setup and placement ----------
+  function shuffled(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  // Builds the board for the sort about to run. The deck order is shuffled
+  // per participant by default: cards shown first get placed while people
+  // are still fresh and still forming their mental model, so a fixed order
+  // would bake the same bias into every session.
+  function buildBoard() {
+    var s = currentSort();
+    deckOrder = activeStudy.shuffleCards === false ? s.cards.slice() : shuffled(s.cards);
+    groups = [];
+    customGroupSeq = 0;
+    if (s.mode !== "open") {
+      (s.categories || []).forEach(function (name, i) {
+        groups.push({ id: "c" + i, name: name, fixed: true });
+      });
+    }
+    placements = {};
+    otherReasons = {};
+    moveTrail = [];
+    selectedCard = null;
+    justPlaced = null;
+    confirmFinishSort = false;
+  }
+
+  function otherEnabled() {
+    return currentSort().allowOther !== false;
+  }
+  function canAddGroups() {
+    return currentSort().mode !== "closed";
+  }
+  function groupById(id) {
+    for (var i = 0; i < groups.length; i++) if (groups[i].id === id) return groups[i];
+    return null;
+  }
+  function groupLabel(id) {
+    if (id === OTHER_ID) return OTHER_LABEL;
+    var g = groupById(id);
+    if (!g) return "the deck";
+    return g.name || "an unnamed group";
+  }
+  // Cards keep the order they were placed in, which is the order a
+  // participant would expect to read them back in.
+  function cardsIn(groupId) {
+    var out = [];
+    deckOrder.forEach(function (c) { if (placements[c] === groupId) out.push(c); });
+    return out;
+  }
+  function deckCards() {
+    return deckOrder.filter(function (c) { return !placements[c]; });
+  }
+  function placedCount() {
+    return deckOrder.length - deckCards().length;
+  }
+
+  function placeCard(card, targetId) {
+    if (!card) return;
+    var from = placements[card] || "deck";
+    if (from === targetId || (targetId === "deck" && !placements[card])) {
+      // Dropped back where it came from -- not a move, and not worth a
+      // trail entry that would inflate the recorded hesitation.
+      selectedCard = null;
+      render();
+      return;
+    }
+    if (targetId === "deck") {
+      delete placements[card];
+      delete otherReasons[card];
+    } else {
+      placements[card] = targetId;
+      if (targetId !== OTHER_ID) delete otherReasons[card];
+    }
+    moveTrail.push({ at: startedAt ? Date.now() - startedAt : 0, card: card, from: from, to: targetId });
+    selectedCard = null;
+    justPlaced = card;
+    confirmFinishSort = false;
+    render();
+    // The flash is a one-shot confirmation, not a persistent state -- clear
+    // it so the next unrelated render doesn't replay it.
+    setTimeout(function () { justPlaced = null; }, 400);
+  }
+
+  function toggleSelect(card) {
+    selectedCard = selectedCard === card ? null : card;
+    render();
+  }
+  function clearSelection() {
+    if (selectedCard == null) return;
+    selectedCard = null;
+    render();
+  }
+
+  function addCustomGroup() {
+    customGroupSeq++;
+    var id = "u" + customGroupSeq;
+    groups.push({ id: id, name: "", fixed: false });
+    render();
+    // Drop straight into the new group's name field: naming it is the only
+    // thing that can usefully happen next.
+    requestAnimationFrame(function () {
+      var input = document.querySelector('.group-name-input[data-group-id="' + id + '"]');
+      if (input) { input.focus(); input.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+    });
+  }
+  function renameGroup(id, name) {
+    var g = groupById(id);
+    if (g && !g.fixed) g.name = name;
+  }
+  function deleteGroup(id) {
+    var g = groupById(id);
+    if (!g || g.fixed) return;
+    // Its cards go back to the deck rather than vanishing with it.
+    cardsIn(id).forEach(function (c) {
+      delete placements[c];
+      moveTrail.push({ at: startedAt ? Date.now() - startedAt : 0, card: c, from: id, to: "deck" });
+    });
+    groups = groups.filter(function (x) { return x.id !== id; });
+    render();
+  }
+  function setOtherReason(card, text) {
+    if (text && text.trim()) otherReasons[card] = text;
+    else delete otherReasons[card];
+  }
+
+  // ---------- Pointer dragging ----------
+  // One pointer-based implementation rather than HTML5 drag-and-drop,
+  // which doesn't fire on touch at all -- these sessions run on a shared
+  // tablet or laptop, so the same code has to serve both. A press that
+  // never travels past the threshold falls through to the tap-to-place
+  // path instead, which is also the keyboard path.
+  var DRAG_THRESHOLD = 6;
+  var dragState = null;
+  var suppressNextClick = false;
+
+  function onCardPointerDown(e, card, fromId, chipEl) {
+    if (e.button != null && e.button !== 0) return;
+    dragState = {
+      card: card, fromId: fromId, chip: chipEl,
+      startX: e.clientX, startY: e.clientY,
+      started: false, ghost: null, overEl: null
+    };
+    window.addEventListener("pointermove", onCardPointerMove);
+    window.addEventListener("pointerup", onCardPointerUp);
+    window.addEventListener("pointercancel", onCardPointerCancel);
+  }
+
+  function beginDrag(e) {
+    var d = dragState;
+    var rect = d.chip.getBoundingClientRect();
+    var ghost = d.chip.cloneNode(true);
+    ghost.classList.add("card-chip", "drag-ghost");
+    ghost.classList.remove("selected", "just-placed");
+    ghost.style.width = rect.width + "px";
+    ghost.style.left = rect.left + "px";
+    ghost.style.top = rect.top + "px";
+    document.body.appendChild(ghost);
+    d.ghost = ghost;
+    d.grabX = d.startX - rect.left;
+    d.grabY = d.startY - rect.top;
+    d.started = true;
+    d.chip.classList.add("dragging");
+    document.body.style.cursor = "grabbing";
+  }
+
+  function dropTargetAt(x, y) {
+    var node = document.elementFromPoint(x, y);
+    return node ? node.closest("[data-drop-id]") : null;
+  }
+
+  function onCardPointerMove(e) {
+    var d = dragState;
+    if (!d) return;
+    if (!d.started) {
+      if (Math.abs(e.clientX - d.startX) < DRAG_THRESHOLD && Math.abs(e.clientY - d.startY) < DRAG_THRESHOLD) return;
+      beginDrag(e);
+    }
+    e.preventDefault();
+    d.ghost.style.left = (e.clientX - d.grabX) + "px";
+    d.ghost.style.top = (e.clientY - d.grabY) + "px";
+
+    var target = dropTargetAt(e.clientX, e.clientY);
+    if (target !== d.overEl) {
+      if (d.overEl) d.overEl.classList.remove("drop-target");
+      if (target) target.classList.add("drop-target");
+      d.overEl = target;
+    }
+
+    // A tall board scrolls well past the viewport, so a drag that reaches
+    // the edge has to bring the rest of it into reach.
+    var EDGE = 90;
+    if (e.clientY < EDGE) window.scrollBy(0, -14);
+    else if (e.clientY > window.innerHeight - EDGE) window.scrollBy(0, 14);
+  }
+
+  function endDragCleanup() {
+    var d = dragState;
+    if (!d) return;
+    if (d.ghost) d.ghost.remove();
+    if (d.chip) d.chip.classList.remove("dragging");
+    if (d.overEl) d.overEl.classList.remove("drop-target");
+    document.body.style.cursor = "";
+    window.removeEventListener("pointermove", onCardPointerMove);
+    window.removeEventListener("pointerup", onCardPointerUp);
+    window.removeEventListener("pointercancel", onCardPointerCancel);
+    dragState = null;
+  }
+
+  function onCardPointerUp(e) {
+    var d = dragState;
+    if (!d) return;
+    var wasDrag = d.started;
+    var card = d.card;
+    var target = wasDrag ? dropTargetAt(e.clientX, e.clientY) : null;
+    endDragCleanup();
+    if (!wasDrag) return; // a press that never travelled: let the click handler select it
+    // The click event that follows this pointerup would otherwise re-open
+    // the selection the drag has just resolved.
+    suppressNextClick = true;
+    setTimeout(function () { suppressNextClick = false; }, 0);
+    if (target) placeCard(card, target.dataset.dropId);
+  }
+
+  function onCardPointerCancel() {
+    var wasDrag = dragState && dragState.started;
+    endDragCleanup();
+    if (wasDrag) { suppressNextClick = true; setTimeout(function () { suppressNextClick = false; }, 0); }
+  }
+
+  // ---------- Sort lifecycle ----------
+  function unnamedCustomGroups() {
+    return groups.filter(function (g) { return !g.fixed && cardsIn(g.id).length && !String(g.name || "").trim(); });
+  }
+  function customGroups() {
+    return groups.filter(function (g) { return !g.fixed; });
+  }
+
+  function requestFinishSort() {
+    if (deckCards().length && !confirmFinishSort) {
+      confirmFinishSort = true;
+      render();
+      return;
+    }
+    finishSortToNaming();
+  }
+
+  function finishSortToNaming() {
+    confirmFinishSort = false;
+    selectedCard = null;
+    // Empty groups a participant made and then emptied again carry no
+    // signal, and asking them to name one is a pointless question.
+    groups = groups.filter(function (g) { return g.fixed || cardsIn(g.id).length; });
+    if (customGroups().length) {
+      phase = "naming";
+      stopTimerTick();
+      render();
+      return;
+    }
+    finishSort();
+  }
+
+  function finishSort() {
+    stopTimerTick();
+    var elapsed = startedAt ? Date.now() - startedAt : 0;
+    var s = currentSort();
+    var groupPayload = groups
+      .filter(function (g) { return cardsIn(g.id).length; })
+      .map(function (g) {
+        return { id: g.id, name: g.fixed ? g.name : String(g.name || "").trim(), fixed: !!g.fixed, cards: cardsIn(g.id) };
+      });
+    var otherPayload = cardsIn(OTHER_ID).map(function (c) {
+      return { card: c, reason: otherReasons[c] || "" };
+    });
+    results.push({
+      sortIndex: sortIndex,
+      prompt: s.prompt,
+      tests: s.tests || "",
+      mode: s.mode,
+      deckOrder: deckOrder.slice(),
+      groups: groupPayload,
+      other: otherPayload,
+      unsorted: deckCards(),
+      timeMs: elapsed,
+      moves: moveTrail.length,
+      trail: moveTrail.slice(),
+      confidence: null,
+      notes: ""
+    });
+    phase = "return";
+    render();
+  }
+
+  function setConfidence(v) { confidence = v; results[results.length - 1].confidence = v; render(); }
+  function setNotes(v) { results[results.length - 1].notes = v; }
+
+  function resultsForDoc() {
+    return results.map(function (r) {
+      return {
+        sortIndex: r.sortIndex, prompt: r.prompt, tests: r.tests, mode: r.mode,
+        deckOrder: r.deckOrder || [], groups: r.groups || [], other: r.other || [],
+        unsorted: r.unsorted || [], timeMs: r.timeMs, moves: r.moves,
+        trail: r.trail || [], confidence: r.confidence, notes: r.notes
+      };
+    });
+  }
+
+  // Writes the session's progress to its own ledger doc as each sort is
+  // logged, rather than only once at the very end -- a crash, closed tab
+  // or moderator slip mid-session leaves a resumable "in-progress" record
+  // instead of losing the run. Practice runs are never written.
+  function persistSession(isFinal) {
+    if (practiceRun) return;
+    var payload = {
+      participant: participant,
+      participantInternal: participantInternal,
+      status: isFinal ? "completed" : "in-progress",
+      startedAt: sessionStartedAtIso,
+      contentVersion: sessionContentVersion,
+      results: resultsForDoc(),
+      updatedAt: new Date().toISOString(),
+      finishedAt: isFinal ? new Date().toISOString() : null
+    };
+    if (dbReady && db) {
+      if (sessionDocId) {
+        db.collection("sessions").doc(sessionDocId).set(payload).catch(function () {});
+      } else {
+        db.collection("sessions").add(payload).then(function (ref) {
+          sessionDocId = (ref && ref.id) ? ref.id : sessionDocId;
+        }).catch(function () {});
+      }
+      return;
+    }
+    if (localStorageOk) {
+      if (!sessionDocId) sessionDocId = "local-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+      var docs = localLedgerRead();
+      var found = false;
+      for (var i = 0; i < docs.length; i++) {
+        if (docs[i]._id === sessionDocId) { docs[i] = Object.assign({ _id: sessionDocId }, payload); found = true; break; }
+      }
+      if (!found) docs.push(Object.assign({ _id: sessionDocId }, payload));
+      localLedgerWrite(docs);
+      refreshLocalLedger();
+    }
+  }
+
+  function nextSort() {
+    sortIndex++;
+    confidence = null;
+    if (sortIndex >= sortCount()) {
+      phase = "done";
+      endedEarly = false;
+      persistSession(true);
+    } else {
+      buildBoard();
+      phase = "preview";
+      persistSession(false);
+    }
+    render();
+  }
+
+  function endSessionEarly() {
+    confirmEndSession = false;
+    endedEarly = true;
+    phase = "done";
+    persistSession(true);
+    render();
+  }
+
+  // Discards the just-logged sort (nothing has hit the shared ledger yet --
+  // that only happens via nextSort() -- so this is a plain in-memory undo)
+  // and hands the device back for another go at the same deck.
+  function retakeSort() {
+    results.pop();
+    confidence = null;
+    buildBoard();
+    confirmRetake = false;
+    retakePending = true;
+    phase = "preview";
+    render();
+  }
+
+  function goBrief() {
+    phase = "brief";
+    onboardStep = null;
+    retakePending = false;
+    render();
+    if (sortIndex === 0) {
+      // Let the participant see the plain screen for a beat before the
+      // onboarding tour fades in over it.
+      setTimeout(function () {
+        if (phase === "brief" && sortIndex === 0) {
+          onboardStep = 1;
+          renderOnboardTour();
+        }
+      }, 900);
+    }
+  }
+
+  function goSorting() {
+    startedAt = Date.now();
+    phase = "sorting";
+    onboardStep = null;
+    render();
+    startTimerTick();
+    if (sortIndex === 0) {
+      // Two more tour steps covering the board itself, shown once the
+      // participant has had a moment to look at it. Their visible time is
+      // excluded from the recorded duration (see pauseTimerForOnboard()).
+      setTimeout(function () {
+        if (phase === "sorting" && sortIndex === 0) {
+          onboardStep = 3;
+          pauseTimerForOnboard();
+          renderOnboardTour();
+        }
+      }, 900);
+    }
+  }
+
+  function goCapture() { phase = "capture"; render(); }
+
+  function startSetup() {
+    view = "session"; phase = "setup"; participant = ""; practiceRun = false; participantInternal = false;
+    sortIndex = 0; confidence = null; results = []; startedAt = 0;
+    deckOrder = []; groups = []; placements = {}; otherReasons = {}; moveTrail = []; selectedCard = null;
+    endedEarly = false; confirmEndSession = false; confirmRetake = false; retakePending = false;
+    confirmFinishSort = false;
+    sessionDocId = null; sessionStartedAtIso = null; sessionContentVersion = null; confirmDiscardResumeId = null;
+    render();
+  }
+
+  // Participant names must be unique. The ledger is the only source of
+  // truth for "already used" -- practice runs are never saved there, so
+  // they never make a name unavailable, but a new session (practice or
+  // not) still can't reuse a name that's already in the ledger.
+  function isDuplicateParticipant(name) {
+    var n = name.trim().toLowerCase();
+    if (!n) return false;
+    return ledgerDocs.some(function (d) { return (d.participant || "").trim().toLowerCase() === n; });
+  }
+
+  function beginSession(name, isPractice, isInternal) {
+    if (isDuplicateParticipant(name)) return; // defensive: guards a race with another device saving that name
+    participant = name; practiceRun = isPractice; participantInternal = !!isInternal;
+    sortIndex = 0; results = []; confidence = null;
+    buildBoard();
+    phase = "preview";
+    endedEarly = false; confirmEndSession = false; confirmRetake = false; retakePending = false;
+    sessionDocId = null; sessionStartedAtIso = new Date().toISOString(); sessionContentVersion = activeContentVersion;
+    render();
+    // Create the in-progress doc right away (rather than waiting for the
+    // first sort to finish) so even a crash before anything completes
+    // still leaves a resumable record instead of nothing at all.
+    if (!isPractice) persistSession(false);
+  }
+
+  function resumeSession(doc) {
+    sessionDocId = doc._id;
+    participant = doc.participant || "";
+    practiceRun = false;
+    participantInternal = !!doc.participantInternal;
+    results = (doc.results || []).slice();
+    sortIndex = results.length;
+    confidence = null;
+    sessionContentVersion = doc.contentVersion || activeContentVersion;
+    sessionStartedAtIso = doc.startedAt || new Date().toISOString();
+    endedEarly = false; confirmEndSession = false; confirmRetake = false; retakePending = false;
+    confirmDiscardResumeId = null;
+    if (sortIndex >= sortCount()) {
+      // Edge case: every sort was already logged but the doc never got
+      // marked completed (the final save was interrupted too) -- finish
+      // that bookkeeping now rather than leaving it in-progress forever.
+      phase = "done";
+      endedEarly = false;
+      persistSession(true);
+    } else {
+      buildBoard();
+      phase = "preview";
+    }
+    render();
+  }
+
+  function discardInProgress(id) {
+    if (dbReady && db) {
+      db.collection("sessions").doc(id).delete().catch(function () {});
+    } else if (localStorageOk) {
+      localLedgerWrite(localLedgerRead().filter(function (d) { return d._id !== id; }));
+      refreshLocalLedger();
+    }
+    confirmDiscardResumeId = null;
+    render();
+  }
+
+  // ---------- Ledger ----------
+  function subscribeLedger() {
+    if (dbReady && db) {
+      if (ledgerUnsub) return;
+      ledgerUnsub = db.collection("sessions").orderBy("finishedAt", "desc").limit(200).onSnapshot(function (snap) {
+        ledgerDocs = snap.docs.map(function (d) {
+          var data = d.data();
+          return data ? Object.assign({ _id: d.id }, data) : null;
+        }).filter(Boolean);
+        if (view === "ledger") render();
+      }, function () {});
+      return;
+    }
+    if (localStorageOk) refreshLocalLedger();
+  }
+
+  function findSessionToggle(docId) {
+    var btns = document.querySelectorAll(".session-row-toggle");
+    for (var i = 0; i < btns.length; i++) if (btns[i].dataset.docId === docId) return btns[i];
+    return null;
+  }
+  function findDeleteBtn(docId) {
+    var btns = document.querySelectorAll(".ledger-delete-btn");
+    for (var i = 0; i < btns.length; i++) if (btns[i].dataset.docId === docId) return btns[i];
+    return null;
+  }
+  function focusMainHeading() { return document.querySelector("main h2, main h1"); }
+
+  function deleteSession(id) {
+    if (dbReady && db) {
+      db.collection("sessions").doc(id).delete().catch(function () {});
+    } else if (localStorageOk) {
+      localLedgerWrite(localLedgerRead().filter(function (d) { return d._id !== id; }));
+      refreshLocalLedger();
+    } else { return; }
+    confirmDeleteId = null;
+    scheduleFocus(focusMainHeading);
+    render();
+  }
+
+  function clearAllSessions() {
+    if (dbReady && db) {
+      ledgerDocs.forEach(function (doc) { db.collection("sessions").doc(doc._id).delete().catch(function () {}); });
+    } else if (localStorageOk) {
+      localLedgerWrite([]);
+      refreshLocalLedger();
+    } else { return; }
+    confirmClearAll = false;
+    scheduleFocus(focusMainHeading);
+    render();
+  }
+
+  // Lets the moderator revisit a saved session later and amend a sort's
+  // notes. The `results` array is replaced wholesale (db update() merges
+  // top-level fields but not array contents), so it's cloned with just
+  // that one entry's notes changed.
+  function updateSessionNotes(docId, resultIndex, notesText, btn) {
+    var doc = ledgerDocs.filter(function (d) { return d._id === docId; })[0];
+    if (!doc) return;
+    var newResults = (doc.results || []).map(function (r, i) {
+      if (i !== resultIndex) return r;
+      return Object.assign({}, r, { notes: notesText });
+    });
+    function ok() { if (btn) { btn.textContent = "Saved"; setTimeout(function () { btn.textContent = "Save"; }, 1200); } }
+    function fail() { if (btn) { btn.textContent = "Couldn't save"; setTimeout(function () { btn.textContent = "Save"; }, 1500); } }
+    if (dbReady && db) {
+      db.collection("sessions").doc(docId).update({ results: newResults }).then(ok).catch(fail);
+    } else if (localStorageOk) {
+      var docs = localLedgerRead();
+      for (var i = 0; i < docs.length; i++) {
+        if (docs[i]._id === docId) { docs[i] = Object.assign({}, docs[i], { results: newResults }); break; }
+      }
+      localLedgerWrite(docs);
+      refreshLocalLedger();
+      ok();
+    } else { fail(); }
+  }
+
+  // ---------- Analysis ----------
+  // Every result for one sort index, across every saved session.
+  function resultsForSort(sortIdx) {
+    var out = [];
+    ledgerDocs.forEach(function (doc) {
+      (doc.results || []).forEach(function (r) {
+        if (r.sortIndex === sortIdx) out.push({ doc: doc, r: r });
+      });
+    });
+    return out;
+  }
+
+  // card -> { group: normalised name | null, display, parked, unsorted }
+  // for one result. "parked" means the Other bay; "unsorted" means it was
+  // never taken out of the deck. Both are tracked separately from grouping
+  // because they mean different things: one is a judgement, one isn't.
+  function placementMap(r) {
+    var map = {};
+    (r.groups || []).forEach(function (g) {
+      var display = g.name || "(unnamed group)";
+      (g.cards || []).forEach(function (c) {
+        map[c] = { group: normaliseName(display), display: display, parked: false, unsorted: false };
+      });
+    });
+    (r.other || []).forEach(function (o) {
+      map[o.card] = { group: null, display: OTHER_LABEL, parked: true, unsorted: false, reason: o.reason || "" };
+    });
+    (r.unsorted || []).forEach(function (c) {
+      map[c] = { group: null, display: "(left in the deck)", parked: false, unsorted: true };
+    });
+    return map;
+  }
+
+  function analysisForSort(sortIdx) {
+    var rows = resultsForSort(sortIdx);
+    var n = rows.length;
+    var cardStats = {};   // card -> { n, byGroup: {norm: {display, count}}, parked, unsorted, reasons: [] }
+    var pairTogether = {};// "a||b" -> count grouped together
+    var pairBoth = {};    // "a||b" -> count where both were in a real group
+    var addedGroups = {}; // norm -> { display, uses, sizes: [] }
+    var times = [], customCounts = [], unsortedCounts = [], moveCounts = [];
+
+    rows.forEach(function (row) {
+      var r = row.r;
+      var map = placementMap(r);
+      var deck = (r.deckOrder && r.deckOrder.length) ? r.deckOrder : Object.keys(map);
+      times.push(r.timeMs || 0);
+      moveCounts.push(r.moves || 0);
+      unsortedCounts.push((r.unsorted || []).length);
+      customCounts.push((r.groups || []).filter(function (g) { return !g.fixed; }).length);
+
+      (r.groups || []).forEach(function (g) {
+        if (g.fixed) return;
+        var key = normaliseName(g.name || "(unnamed group)");
+        if (!addedGroups[key]) addedGroups[key] = { display: g.name || "(unnamed group)", uses: 0, sizes: [] };
+        addedGroups[key].uses++;
+        addedGroups[key].sizes.push((g.cards || []).length);
+      });
+
+      deck.forEach(function (card) {
+        if (!cardStats[card]) cardStats[card] = { n: 0, byGroup: {}, parked: 0, unsorted: 0, reasons: [] };
+        var st = cardStats[card];
+        st.n++;
+        var p = map[card];
+        if (!p) { st.unsorted++; return; }
+        if (p.unsorted) { st.unsorted++; return; }
+        if (p.parked) {
+          st.parked++;
+          if (p.reason) st.reasons.push({ participant: row.doc.participant || "(unnamed)", reason: p.reason });
+          return;
+        }
+        if (!st.byGroup[p.group]) st.byGroup[p.group] = { display: p.display, count: 0 };
+        st.byGroup[p.group].count++;
+      });
+
+      // Co-occurrence over real groups only. Two cards both parked in the
+      // Other bay is a shared judgement about the categories, not evidence
+      // that they belong together, so it must not read as agreement.
+      var grouped = deck.filter(function (c) { return map[c] && map[c].group; });
+      for (var i = 0; i < grouped.length; i++) {
+        for (var j = i + 1; j < grouped.length; j++) {
+          var a = grouped[i], b = grouped[j];
+          var key = a < b ? a + "||" + b : b + "||" + a;
+          pairBoth[key] = (pairBoth[key] || 0) + 1;
+          if (map[a].group === map[b].group) pairTogether[key] = (pairTogether[key] || 0) + 1;
+        }
+      }
+    });
+
+    var cards = Object.keys(cardStats).map(function (card) {
+      var st = cardStats[card];
+      var top = null;
+      Object.keys(st.byGroup).forEach(function (k) {
+        if (!top || st.byGroup[k].count > top.count) top = st.byGroup[k];
+      });
+      return {
+        card: card, n: st.n,
+        top: top ? top.display : null,
+        topCount: top ? top.count : 0,
+        // Denominator is every participant who saw the card, not just
+        // those who filed it, so a card half of them refused to place
+        // can't report near-total agreement.
+        topPct: st.n ? Math.round((top ? top.count : 0) / st.n * 100) : null,
+        parked: st.parked,
+        parkedPct: st.n ? Math.round(st.parked / st.n * 100) : 0,
+        unsorted: st.unsorted,
+        unsortedPct: st.n ? Math.round(st.unsorted / st.n * 100) : 0,
+        distinctGroups: Object.keys(st.byGroup).length,
+        reasons: st.reasons
+      };
+    }).sort(function (a, b) {
+      if (a.topPct === b.topPct) return a.card < b.card ? -1 : 1;
+      return (a.topPct == null ? -1 : a.topPct) - (b.topPct == null ? -1 : b.topPct);
+    });
+
+    var pairs = Object.keys(pairBoth).map(function (key) {
+      var parts = key.split("||");
+      var together = pairTogether[key] || 0;
+      return { a: parts[0], b: parts[1], together: together, both: pairBoth[key],
+        pct: Math.round(together / pairBoth[key] * 100) };
+    }).filter(function (p) { return p.together > 0; })
+      .sort(function (x, y) { return y.pct - x.pct || y.both - x.both; });
+
+    var added = Object.keys(addedGroups).map(function (k) {
+      return { name: addedGroups[k].display, uses: addedGroups[k].uses, medianSize: median(addedGroups[k].sizes) };
+    }).sort(function (x, y) { return y.uses - x.uses; });
+
+    var parked = cards.filter(function (c) { return c.parked > 0; })
+      .sort(function (x, y) { return y.parked - x.parked; });
+
+    return {
+      n: n, cards: cards, pairs: pairs, addedGroups: added, parked: parked,
+      medianTime: median(times), medianCustom: median(customCounts),
+      medianUnsorted: median(unsortedCounts), medianMoves: median(moveCounts)
+    };
+  }
+
+  function participantTypeLabel(doc) {
+    return doc.participantInternal ? "Internal (doTERRA staff)" : "External (customer)";
+  }
+
+  // ---------- Exports ----------
+  function csvCell(v) {
+    var s = String(v == null ? "" : v).replace(/"/g, '""');
+    return /[",\n]/.test(s) ? '"' + s + '"' : s;
+  }
+  function csvJoin(rows) {
+    return rows.map(function (row) { return row.map(csvCell).join(","); }).join("\n");
+  }
+
+  // One row per card per sort: the shape that joins cleanly against the
+  // Wayfinding Trial export on participant name in a spreadsheet.
+  function csvForDocs(docs) {
+    var rows = [["Participant", "Participant type", "Sort #", "Prompt", "Mode", "Card", "Placed in",
+      "Placement type", "Why it didn't fit", "Sort time (s)", "Moves", "Confidence", "Notes", "Content v", "Finished at"]];
+    docs.forEach(function (doc) {
+      (doc.results || []).forEach(function (r) {
+        var map = placementMap(r);
+        var deck = (r.deckOrder && r.deckOrder.length) ? r.deckOrder : Object.keys(map);
+        var fixedNames = {};
+        (r.groups || []).forEach(function (g) { if (g.fixed) fixedNames[normaliseName(g.name)] = true; });
+        deck.forEach(function (card) {
+          var p = map[card];
+          var placedIn = "", type = "unsorted", reason = "";
+          if (p && p.parked) { placedIn = OTHER_LABEL; type = "other"; reason = p.reason || ""; }
+          else if (p && p.group) { placedIn = p.display; type = fixedNames[p.group] ? "category" : "participant group"; }
+          rows.push([doc.participant, participantTypeLabel(doc), r.sortIndex + 1, r.prompt, r.mode, card,
+            placedIn, type, reason, Math.round((r.timeMs || 0) / 1000), r.moves == null ? "" : r.moves,
+            r.confidence == null ? "" : r.confidence, r.notes || "", doc.contentVersion || "", doc.finishedAt || ""]);
+        });
+      });
+    });
+    return csvJoin(rows);
+  }
+
+  // A square card-by-card matrix of "what % of participants who placed
+  // both of these put them in the same group". This is the file to open in
+  // a stats package if the sample ever gets big enough for clustering.
+  function coOccurrenceCsv(docs) {
+    var saved = ledgerDocs;
+    ledgerDocs = docs; // analysisForSort reads the module-level ledger
+    var sections = [];
+    (activeStudy.sorts || DEFAULT_SORTS).forEach(function (s, idx) {
+      var a = analysisForSort(idx);
+      if (!a.n) return;
+      var cards = a.cards.map(function (c) { return c.card; }).sort();
+      var lookup = {};
+      a.pairs.forEach(function (p) { lookup[p.a + "||" + p.b] = p.pct; });
+      var rows = [["Sort " + (idx + 1) + " - % of participants grouping the pair together (n=" + a.n + ")"]];
+      rows.push([""].concat(cards));
+      cards.forEach(function (rowCard) {
+        var line = [rowCard];
+        cards.forEach(function (colCard) {
+          if (rowCard === colCard) { line.push("100"); return; }
+          var key = rowCard < colCard ? rowCard + "||" + colCard : colCard + "||" + rowCard;
+          line.push(lookup[key] == null ? "0" : String(lookup[key]));
+        });
+        rows.push(line);
+      });
+      sections.push(csvJoin(rows));
+    });
+    ledgerDocs = saved;
+    return sections.join("\n\n");
+  }
+
+  function jsonForDocs(docs) {
+    return JSON.stringify(docs.map(function (doc) {
+      return {
+        participant: doc.participant,
+        participantType: doc.participantInternal ? "internal" : "external",
+        status: doc.status || "completed",
+        contentVersion: doc.contentVersion || null,
+        startedAt: doc.startedAt || null,
+        finishedAt: doc.finishedAt,
+        results: (doc.results || []).map(function (r) {
+          return { sortIndex: r.sortIndex, prompt: r.prompt, tests: r.tests, mode: r.mode,
+            deckOrder: r.deckOrder || [], groups: r.groups || [], other: r.other || [],
+            unsorted: r.unsorted || [], timeMs: r.timeMs, moves: r.moves, trail: r.trail || [],
+            confidence: r.confidence, notes: r.notes };
+        })
+      };
+    }), null, 2);
+  }
+
+  function mdEscape(s) {
+    // Keeps card labels, group names and notes from breaking a table row.
+    return String(s == null ? "" : s).replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+  }
+
+  function markdownForDocs(docs) {
+    var saved = ledgerDocs;
+    ledgerDocs = docs;
+    var lines = ["# Grouping Study Results", "", "_Exported " + new Date().toLocaleString() + "_"];
+
+    (activeStudy.sorts || DEFAULT_SORTS).forEach(function (s, idx) {
+      var a = analysisForSort(idx);
+      if (!a.n) return;
+      lines.push("", "## Sort " + (idx + 1) + " · aggregate", "");
+      lines.push("Participants: " + a.n + " · Mode: " + s.mode + " · Median time: " + fmtTime(a.medianTime) +
+        " · Median cards left in the deck: " + a.medianUnsorted);
+      lines.push("");
+      lines.push("_" + agreementRuleText() + " At this sample size, treat these as directional and read them alongside the session notes._");
+      lines.push("", "### Card agreement", "");
+      lines.push("| Card | N | Most common group | Agreement | Band | Other | Left in deck |");
+      lines.push("|---|---|---|---|---|---|---|");
+      a.cards.forEach(function (c) {
+        lines.push("| " + mdEscape(c.card) + " | " + c.n + " | " + mdEscape(c.top || "None") + " | " +
+          (c.topPct == null ? "·" : c.topPct + "%") + " | " + agreementLabel(c.topPct) + " | " +
+          c.parked + " | " + c.unsorted + " |");
+      });
+      if (a.parked.length) {
+        lines.push("", "### Cards parked in " + OTHER_LABEL, "");
+        a.parked.forEach(function (c) {
+          lines.push("- **" + c.card + "**, parked by " + plural(c.parked, "participant"));
+          c.reasons.forEach(function (x) { lines.push("  - " + x.participant + ": " + x.reason); });
+        });
+      }
+      if (a.addedGroups.length) {
+        lines.push("", "### Groups participants added", "");
+        lines.push("| Group | Times created | Median size |");
+        lines.push("|---|---|---|");
+        a.addedGroups.forEach(function (g) {
+          lines.push("| " + mdEscape(g.name) + " | " + g.uses + " | " + g.medianSize + " |");
+        });
+      }
+      if (a.pairs.length) {
+        lines.push("", "### Strongest card pairs", "");
+        lines.push("| Card A | Card B | Grouped together |");
+        lines.push("|---|---|---|");
+        a.pairs.slice(0, 20).forEach(function (p) {
+          lines.push("| " + mdEscape(p.a) + " | " + mdEscape(p.b) + " | " + p.pct + "% (" + p.together + "/" + p.both + ") |");
+        });
+      }
+    });
+
+    docs.forEach(function (doc) {
+      lines.push("", "## " + (doc.participant || "(unnamed)"), "");
+      lines.push("Status: " + (doc.status || "completed") + " · " + participantTypeLabel(doc) +
+        (doc.contentVersion ? " · Content version: v" + doc.contentVersion : "") +
+        (doc.finishedAt ? " · Finished: " + new Date(doc.finishedAt).toLocaleString() : ""));
+      (doc.results || []).forEach(function (r) {
+        lines.push("", "### Sort " + (r.sortIndex + 1) + " · " + fmtTime(r.timeMs || 0) +
+          " · " + plural(r.moves || 0, "move") +
+          " · confidence " + (r.confidence == null ? "not recorded" : r.confidence));
+        (r.groups || []).forEach(function (g) {
+          lines.push("", "**" + (g.name || "(unnamed group)") + "**" + (g.fixed ? "" : " _(added by participant)_"));
+          (g.cards || []).forEach(function (c) { lines.push("- " + c); });
+        });
+        if ((r.other || []).length) {
+          lines.push("", "**" + OTHER_LABEL + "**");
+          r.other.forEach(function (o) { lines.push("- " + o.card + (o.reason ? ": " + o.reason : "")); });
+        }
+        if ((r.unsorted || []).length) {
+          lines.push("", "**Left in the deck**");
+          r.unsorted.forEach(function (c) { lines.push("- " + c); });
+        }
+        if (r.notes) lines.push("", "Moderator notes: " + r.notes);
+      });
+    });
+    ledgerDocs = saved;
+    return lines.join("\n");
+  }
+
+  function slugify(s) {
+    return (s || "session").toString().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "session";
+  }
+
+  // Works even when the Artifact's own `downloads` capability isn't there
+  // (the file opened directly, or served from a plain local server) -- a
+  // plain Blob + temporary <a download> is supported by any browser, so
+  // exporting never depends on which runtime this page happens to be in.
+  function triggerBrowserDownload(filename, data, mime) {
+    try {
+      var blob = new Blob([data], { type: mime || "text/plain" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function saveFile(filename, data, mime) {
+    if (downloads) downloads.save({ filename: filename, data: data });
+    else triggerBrowserDownload(filename, data, mime);
+  }
+  function downloadCsv(docs, base) { saveFile(base + ".csv", csvForDocs(docs), "text/csv"); }
+  function downloadMatrix(docs, base) { saveFile(base + "-co-occurrence.csv", coOccurrenceCsv(docs), "text/csv"); }
+  function downloadJson(docs, base) { saveFile(base + ".json", jsonForDocs(docs), "application/json"); }
+  function downloadMarkdown(docs, base) { saveFile(base + ".md", markdownForDocs(docs), "text/markdown"); }
+
+  // ---------- Onboarding tour ----------
+  // Two steps on the first sort's briefing screen, plus two covering the
+  // board itself once sorting is under way -- each pointing at a real
+  // element by id, and each tagged with the phase it belongs to so the
+  // tour never tries to render a step's target on the wrong screen.
+  var ONBOARD_STEPS = [
+    { target: "onboard-target-prompt", phase: "brief", title: "Your task",
+      text: "You'll get a short instruction like this one, and a deck of cards to put into groups. There are no right answers here, we're testing the website, not you." },
+    { target: "onboard-target-start", phase: "brief", title: "Where to start",
+      text: "Press Start when you're ready. Take as long as you like once you're in." },
+    { target: "onboard-target-deck", phase: "sorting", title: "Your cards",
+      text: "These are the cards to sort. Tap one to pick it up, then tap the group you want it in. You can drag them instead if you prefer." },
+    { target: "onboard-target-groups", phase: "sorting", title: "Where they go",
+      text: "Drop cards into whichever group fits. If none of them do, make your own group, or use the Other bay at the bottom and tell us why. You can move anything again at any point." }
+  ];
+
+  function removeOnboardTour() {
+    var root = document.getElementById("onboard-tour-root");
+    if (root) root.remove();
+  }
+
+  // Ends the tour and returns focus to the next thing the participant
+  // would naturally interact with, since the tip's own buttons (where
+  // focus was) are about to be removed. Also resumes the sort timer if
+  // this was a board step, which pauses it while shown.
+  function skipOnboardTour() {
+    var wasSorting = phase === "sorting";
+    onboardStep = null;
+    removeOnboardTour();
+    resumeTimerFromOnboard();
+    var target = wasSorting
+      ? document.querySelector("#onboard-target-deck .card-chip")
+      : document.getElementById("onboard-target-start");
+    if (target) target.focus();
+  }
+
+  function renderOnboardTour() {
+    removeOnboardTour();
+    if (!onboardStep) return;
+    var stepDef = ONBOARD_STEPS[onboardStep - 1];
+    if (!stepDef || phase !== stepDef.phase) return;
+    var targetEl = document.getElementById(stepDef.target);
+    if (!targetEl) return;
+    var rect = targetEl.getBoundingClientRect();
+
+    var root = document.createElement("div");
+    root.id = "onboard-tour-root";
+
+    var spot = document.createElement("div");
+    spot.className = "onboard-spotlight";
+    spot.style.top = (rect.top - 14) + "px";
+    spot.style.left = (rect.left - 14) + "px";
+    spot.style.width = (rect.width + 28) + "px";
+    spot.style.height = (rect.height + 28) + "px";
+    root.appendChild(spot);
+
+    var tip = document.createElement("div");
+    tip.className = "onboard-tip";
+    tip.setAttribute("role", "dialog");
+    tip.setAttribute("aria-labelledby", "onboard-tip-title");
+    tip.setAttribute("aria-describedby", "onboard-tip-text");
+    tip.tabIndex = -1;
+    var tipWidth = Math.min(300, window.innerWidth - 24);
+    var left = Math.min(Math.max(rect.left, 12), window.innerWidth - tipWidth - 12);
+    tip.style.left = left + "px";
+    tip.style.width = tipWidth + "px";
+    var tipGap = 26; // clears the spotlight's own padding plus a visual gap
+    var spaceBelow = window.innerHeight - rect.bottom;
+    if (spaceBelow < 200 && rect.top > 200) {
+      tip.style.bottom = (window.innerHeight - rect.top + tipGap) + "px";
+    } else {
+      tip.style.top = (Math.min(rect.bottom, window.innerHeight - 200) + tipGap) + "px";
+    }
+
+    // Numbered within this screen's own mini-tour rather than across all
+    // four steps, since there's a real gap in time between the two.
+    var phaseSteps = ONBOARD_STEPS.filter(function (s) { return s.phase === stepDef.phase; });
+    var localIndex = phaseSteps.indexOf(stepDef) + 1;
+    var isLastOfPhase = localIndex >= phaseSteps.length;
+
+    var stepLabel = document.createElement("div");
+    stepLabel.className = "onboard-step-label";
+    stepLabel.textContent = "STEP " + localIndex + " OF " + phaseSteps.length;
+    tip.appendChild(stepLabel);
+
+    var titleEl = document.createElement("div");
+    titleEl.className = "onboard-tip-title";
+    titleEl.id = "onboard-tip-title";
+    titleEl.textContent = stepDef.title;
+    tip.appendChild(titleEl);
+
+    var textEl = document.createElement("div");
+    textEl.className = "onboard-tip-text";
+    textEl.id = "onboard-tip-text";
+    textEl.textContent = stepDef.text;
+    tip.appendChild(textEl);
+
+    var actions = document.createElement("div");
+    actions.className = "onboard-tip-actions";
+
+    var skipBtn = document.createElement("button");
+    skipBtn.className = "onboard-skip";
+    skipBtn.textContent = "Skip";
+    skipBtn.addEventListener("click", skipOnboardTour);
+    actions.appendChild(skipBtn);
+
+    var navGroup = document.createElement("div");
+    navGroup.style.display = "flex";
+    navGroup.style.gap = "8px";
+
+    // Back only makes sense within the same mini-tour -- stepping back
+    // across the brief/board boundary would target an element that
+    // doesn't exist on the current screen.
+    if (onboardStep > 1 && ONBOARD_STEPS[onboardStep - 2].phase === stepDef.phase) {
+      var backBtn = document.createElement("button");
+      backBtn.className = "btn btn-ghost";
+      backBtn.textContent = "Back";
+      backBtn.addEventListener("click", function () { onboardStep--; renderOnboardTour(); });
+      navGroup.appendChild(backBtn);
+    }
+
+    var nextBtn = document.createElement("button");
+    nextBtn.className = "btn btn-primary";
+    nextBtn.textContent = isLastOfPhase ? "Got it" : "Next →";
+    nextBtn.addEventListener("click", function () {
+      if (isLastOfPhase) { skipOnboardTour(); }
+      else { onboardStep++; renderOnboardTour(); }
+    });
+    navGroup.appendChild(nextBtn);
+
+    actions.appendChild(navGroup);
+    tip.appendChild(actions);
+    root.appendChild(tip);
+    document.body.appendChild(root);
+    // Move keyboard focus into the tip so it doesn't get stranded on the
+    // element that opened this step, and so screen readers announce it.
+    tip.focus();
+  }
+
+  // ---------- Board renderers ----------
+  function locationLabel(locationId) {
+    return locationId === "deck" ? "the deck" : groupLabel(locationId);
+  }
+
+  function cardChip(card, locationId) {
+    var isSelected = selectedCard === card;
+    var chip = el("button", {
+      class: "card-chip" + (isSelected ? " selected" : "") + (justPlaced === card ? " just-placed" : ""),
+      "data-card": card,
+      "aria-pressed": String(isSelected),
+      "aria-label": card + ", in " + locationLabel(locationId) + ". " +
+        (isSelected ? "Picked up. Choose a group to put it in." : "Press to pick it up.")
+    }, [el("span", { class: "grip", "aria-hidden": "true", html: GRIP_ICON }), card]);
+    chip.addEventListener("pointerdown", function (e) { onCardPointerDown(e, card, locationId, chip); });
+    chip.addEventListener("click", function (e) {
+      // Without this the click bubbles to the column underneath, which
+      // would read as "put the held card here" the instant you try to
+      // pick a different one up.
+      e.stopPropagation();
+      if (suppressNextClick) return;
+      toggleSelect(card);
+    });
+    return chip;
+  }
+
+  function placeButton(targetId, labelText) {
+    var btn = el("button", { class: "place-btn" }, [labelText || ("Put “" + selectedCard + "” here")]);
+    btn.setAttribute("aria-label", "Put " + selectedCard + " in " + locationLabel(targetId));
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      placeCard(selectedCard, targetId);
+    });
+    return btn;
+  }
+
+  function renderDeck() {
+    var remaining = deckCards();
+    var deck = el("div", {
+      class: "board-deck" + (remaining.length ? "" : " empty"),
+      "data-drop-id": "deck",
+      id: "onboard-target-deck"
+    });
+    deck.addEventListener("click", function () { if (selectedCard) placeCard(selectedCard, "deck"); });
+    deck.appendChild(el("div", { class: "deck-head" }, [
+      el("span", { class: "deck-title" }, ["Cards to sort"]),
+      el("span", { class: "deck-count" }, [placedCount() + " of " + deckOrder.length + " placed"])
+    ]));
+    if (!remaining.length) {
+      deck.appendChild(el("div", { class: "deck-empty-note" }, [
+        "Every card has been placed. Drag one back up here if you change your mind."
+      ]));
+    } else {
+      var strip = el("div", { class: "deck-strip" });
+      remaining.forEach(function (c) { strip.appendChild(cardChip(c, "deck")); });
+      deck.appendChild(strip);
+    }
+    if (selectedCard && placements[selectedCard]) {
+      deck.appendChild(placeButton("deck", "Put “" + selectedCard + "” back in the deck"));
+    }
+    return deck;
+  }
+
+  function renderGroupColumn(g) {
+    var cards = cardsIn(g.id);
+    var col = el("div", {
+      class: "group-col" + (g.fixed ? "" : " custom"),
+      "data-drop-id": g.id
+    });
+    col.addEventListener("click", function () { if (selectedCard) placeCard(selectedCard, g.id); });
+
+    var head = el("div", { class: "group-head" });
+    if (g.fixed) {
+      head.appendChild(el("div", { class: "group-name" }, [g.name]));
+    } else {
+      var input = el("input", {
+        type: "text", class: "group-name-input", "data-group-id": g.id,
+        placeholder: "Name this group", "aria-label": "Name for your group of " + plural(cards.length, "card")
+      });
+      input.value = g.name || "";
+      input.addEventListener("click", function (e) { e.stopPropagation(); });
+      input.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+      // Deliberately no render() here: re-rendering on every keystroke
+      // would tear the field out from under the cursor.
+      input.addEventListener("input", function () { renameGroup(g.id, input.value); });
+      head.appendChild(input);
+    }
+    head.appendChild(el("span", { class: "group-count" }, [String(cards.length)]));
+    if (!g.fixed) {
+      var del = el("button", {
+        class: "col-del", "aria-label": "Remove this group and send its cards back to the deck",
+        title: "Remove group", html: TRASH_ICON
+      });
+      del.addEventListener("click", function (e) { e.stopPropagation(); deleteGroup(g.id); });
+      head.appendChild(del);
+    }
+    col.appendChild(head);
+
+    if (cards.length) {
+      var list = el("div", { class: "group-cards" });
+      cards.forEach(function (c) { list.appendChild(cardChip(c, g.id)); });
+      col.appendChild(list);
+    } else if (!selectedCard) {
+      col.appendChild(el("div", { class: "group-hint" }, ["Empty"]));
+    }
+    if (selectedCard && placements[selectedCard] !== g.id) col.appendChild(placeButton(g.id));
+    return col;
+  }
+
+  function renderOtherColumn() {
+    var cards = cardsIn(OTHER_ID);
+    var col = el("div", { class: "group-col other", "data-drop-id": OTHER_ID, style: "margin-top:12px;" });
+    col.addEventListener("click", function () { if (selectedCard) placeCard(selectedCard, OTHER_ID); });
+    col.appendChild(el("div", { class: "group-head" }, [
+      el("div", { class: "group-name" }, [OTHER_LABEL]),
+      el("span", { class: "group-count" }, [String(cards.length)])
+    ]));
+    col.appendChild(el("div", { class: "group-hint" }, [
+      cards.length
+        ? "A line on why each one didn't fit is the most useful thing you can leave us."
+        : "Put a card here if it doesn't belong in any group, then tell us why."
+    ]));
+    if (cards.length) {
+      var list = el("div", { class: "group-cards" });
+      cards.forEach(function (c) {
+        var wrap = el("div", { class: "other-card" });
+        wrap.appendChild(cardChip(c, OTHER_ID));
+        var reason = el("input", {
+          type: "text", class: "other-reason", "data-card": c,
+          placeholder: "Why doesn't it fit?", "aria-label": "Why " + c + " doesn't fit anywhere"
+        });
+        reason.value = otherReasons[c] || "";
+        reason.addEventListener("click", function (e) { e.stopPropagation(); });
+        reason.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+        reason.addEventListener("input", function () { setOtherReason(c, reason.value); });
+        wrap.appendChild(reason);
+        list.appendChild(wrap);
+      });
+      col.appendChild(list);
+    }
+    if (selectedCard && placements[selectedCard] !== OTHER_ID) col.appendChild(placeButton(OTHER_ID));
+    return col;
+  }
+
+  function renderSorting() {
+    var s = currentSort();
+    var frag = document.createDocumentFragment();
+    var head = el("div", { class: "card", style: "margin-bottom:16px;" });
+    head.appendChild(el("div", { class: "eyebrow muted" }, ["PARTICIPANT"]));
+    head.appendChild(el("div", { class: "progress-row" }, [
+      el("span", { class: "step" }, [
+        (sortCount() > 1 ? "SORT " + (sortIndex + 1) + " OF " + sortCount() + " · " : "") +
+        placedCount() + " OF " + deckOrder.length + " PLACED"
+      ]),
+      practiceRun ? el("span", { class: "timer", id: "timer-readout" }, ["00:00"]) : null
+    ]));
+    head.appendChild(el("div", { class: "scenario compact" }, [s.prompt]));
+    head.appendChild(el("div", { class: "think-aloud-note" }, [
+      el("span", { class: "think-aloud-icon", html: SPEECH_ICON }),
+      "Remember to think out loud as you go"
+    ]));
+    frag.appendChild(head);
+
+    frag.appendChild(renderDeck());
+
+    var boardWrap = el("div", { id: "onboard-target-groups" });
+    // An open sort starts with nothing on the board but the New group
+    // button, which leaves a participant who has never done this with no
+    // idea that making a group is the first move.
+    if (!groups.length) {
+      boardWrap.appendChild(el("p", { class: "hint", style: "margin:0 0 10px; font-size:13px;" }, [
+        "Start by making a group, then put cards into it. Make as many as you need, and name them however you'd say it."
+      ]));
+    }
+    var grid = el("div", { class: "group-grid" });
+    groups.forEach(function (g) { grid.appendChild(renderGroupColumn(g)); });
+    if (canAddGroups()) {
+      var addBtn = el("button", { class: "new-group-btn" }, [
+        el("span", { style: "display:inline-flex;", html: PLUS_ICON }), "New group"
+      ]);
+      addBtn.addEventListener("click", addCustomGroup);
+      grid.appendChild(addBtn);
+    }
+    boardWrap.appendChild(grid);
+    if (otherEnabled()) boardWrap.appendChild(renderOtherColumn());
+    frag.appendChild(boardWrap);
+
+    if (selectedCard) {
+      frag.appendChild(el("div", { class: "select-bar", role: "status" }, [
+        el("div", {}, [
+          el("div", { class: "picked-label" }, ["Holding"]),
+          el("div", { class: "picked" }, [selectedCard])
+        ]),
+        el("div", { style: "display:flex; gap:10px; align-items:center; flex-wrap:wrap;" }, [
+          el("span", { class: "hint", style: "margin:0; font-size:13px;" }, ["Now choose where it goes."]),
+          el("button", { class: "btn btn-ghost", onclick: clearSelection }, ["Put it down"])
+        ])
+      ]));
+    }
+
+    if (confirmFinishSort) {
+      var left = deckCards().length;
+      frag.appendChild(el("div", {
+        class: "warn-note", role: "alertdialog", "aria-label": "Confirm finishing with cards left",
+        style: "display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;"
+      }, [
+        el("span", {}, [
+          plural(left, "card") + " still in the deck. That's completely fine, they'll be recorded as left over. Finish anyway?"
+        ]),
+        el("div", { style: "display:flex; gap:8px;" }, [
+          el("button", {
+            id: "finish-cancel-btn", class: "btn btn-ghost",
+            onclick: function () {
+              confirmFinishSort = false;
+              scheduleFocus(function () { return document.getElementById("finish-sort-btn"); });
+              render();
+            }
+          }, ["Keep sorting"]),
+          el("button", { class: "btn btn-primary", onclick: finishSortToNaming }, ["Yes, I'm done"])
+        ])
+      ]));
+    } else {
+      var doneBtn = el("button", {
+        id: "finish-sort-btn", class: "btn btn-primary btn-big cta-primary", onclick: requestFinishSort
+      }, ["I'm done sorting →", ctaKey()]);
+      frag.appendChild(el("div", { class: "board-actions" }, [
+        el("span", { class: "hint", style: "margin:0; font-size:13px;" }, [
+          "Tap a card to pick it up, then tap where it goes. Dragging works too."
+        ]),
+        doneBtn
+      ]));
+    }
+    return frag;
+  }
+
+  function renderNaming() {
+    var custom = customGroups().filter(function (g) { return cardsIn(g.id).length; });
+    var missing = unnamedCustomGroups();
+    var card = el("div", { class: "card" });
+    card.appendChild(el("div", { class: "eyebrow muted" }, ["PARTICIPANT"]));
+    card.appendChild(el("h2", {}, ["Name the groups you made"]));
+    card.appendChild(el("p", { class: "hint" }, [
+      "Whatever you'd call each one is right. The name you'd use yourself is more useful to us than a tidy one."
+    ]));
+    custom.forEach(function (g) {
+      var row = el("div", { class: "naming-row" });
+      var input = el("input", {
+        type: "text", class: "group-name-input", "data-group-id": g.id,
+        placeholder: "Name this group", "aria-label": "Name for the group containing " + cardsIn(g.id).join(", ")
+      });
+      input.value = g.name || "";
+      input.addEventListener("input", function () { renameGroup(g.id, input.value); });
+      // Only re-render on blur, when the "still to name" warning below may
+      // need to change -- doing it per keystroke would fight the cursor.
+      input.addEventListener("blur", function () { if (missing.length) render(); });
+      row.appendChild(input);
+      var chips = el("div", { class: "naming-cards" });
+      cardsIn(g.id).forEach(function (c) { chips.appendChild(el("span", { class: "mini-chip" }, [c])); });
+      row.appendChild(chips);
+      card.appendChild(row);
+    });
+    if (missing.length) {
+      card.appendChild(el("div", { class: "warn-note" }, [
+        plural(missing.length, "group") + " still to name. A name is the part we can't work out afterwards."
+      ]));
+    }
+    var next = el("button", { class: "btn btn-primary btn-big cta-primary", onclick: finishSort }, ["Done →", ctaKey()]);
+    next.disabled = missing.length > 0;
+    card.appendChild(el("div", { class: "btn-row" }, [next]));
+    return card;
+  }
+
+  // ---------- Moderator screens ----------
+  // A session interrupted mid-run (browser closed, crash, moderator moved
+  // on by accident) is written incrementally, so it's still sitting in the
+  // ledger as "in-progress" -- surface it so the moderator can pick it
+  // back up instead of losing it, or explicitly abandon it.
+  function renderResumeBanner() {
+    var pending = ledgerDocs.filter(function (d) { return d.status === "in-progress"; });
+    if (!pending.length) return null;
+    var frag = document.createDocumentFragment();
+    pending.forEach(function (doc) {
+      var isConfirming = confirmDiscardResumeId === doc._id;
+      var card = el("div", { class: "card", style: "border-color:var(--warn); background:var(--warn-bg);" });
+      card.appendChild(el("div", { class: "eyebrow", style: "color:var(--warn);" }, ["INTERRUPTED SESSION"]));
+      card.appendChild(el("p", { style: "margin:0 0 12px;" }, [
+        "“" + (doc.participant || "(unnamed)") + "” (" + participantTypeLabel(doc) + ") stopped after " +
+        (doc.results || []).length + " of " + sortCount() + " sort(s), without finishing. Resume it, or discard it and start fresh."
+      ]));
+      card.appendChild(el("div", { class: "btn-row", style: "margin-top:0;" }, isConfirming ? [
+        el("span", { class: "hint", style: "align-self:center; margin:0;" }, ["Discard this session for good?"]),
+        el("button", { class: "btn btn-ghost", onclick: function () { confirmDiscardResumeId = null; render(); } }, ["Cancel"]),
+        el("button", { class: "btn btn-primary", style: "background:var(--fail);", onclick: function () { discardInProgress(doc._id); } }, ["Yes, discard"])
+      ] : [
+        el("button", { class: "btn btn-primary", onclick: function () { resumeSession(doc); } }, ["Resume session →"]),
+        el("button", { class: "btn btn-ghost", onclick: function () { confirmDiscardResumeId = doc._id; render(); } }, ["Discard"])
+      ]));
+      frag.appendChild(card);
+    });
+    return frag;
+  }
+
+  function renderSetup() {
+    var resumeBanner = renderResumeBanner();
+    var s = (activeStudy.sorts || DEFAULT_SORTS)[0];
+    var card = el("div", { class: "card" });
+    card.appendChild(el("h2", {}, ["Start a session"]));
+    card.appendChild(el("p", { class: "hint" }, [
+      "One participant at a time. " + (sortCount() === 1 ? "One sort" : sortCount() + " sorts") + ", " +
+      plural(s.cards.length, "card") + ", " + s.mode + " sort. Let them group without steering, and keep them talking."
+    ]));
+    card.appendChild(el("label", { class: "field", for: "participant-input" }, ["Participant"]));
+    var input = el("input", {
+      type: "text", id: "participant-input", placeholder: "e.g. P1, or a name",
+      "aria-describedby": "participant-name-error participant-name-tip"
+    });
+    input.value = participant;
+    card.appendChild(input);
+    var nameError = el("p", {
+      id: "participant-name-error", class: "hint", role: "alert",
+      style: "margin:6px 0 0; color:var(--fail); display:none;"
+    }, ["That name’s already been used. Each participant needs a unique name."]);
+    card.appendChild(nameError);
+    // The two studies keep separate ledgers, so the participant name is
+    // the only thing that can join them afterwards.
+    card.appendChild(el("p", { id: "participant-name-tip", class: "hint", style: "margin:6px 0 0; font-size:12px;" }, [
+      "Use the same ID you use in the Wayfinding Trial (P1, P2…) so the two exports can be joined later."
+    ]));
+    var practice = el("input", { type: "checkbox", id: "practice-check" });
+    card.appendChild(el("div", { style: "margin-top:12px; display:flex; align-items:center; gap:8px;" }, [
+      practice, el("label", { for: "practice-check", style: "font-size:13px; color:var(--muted);" }, ["Practice run, don’t save to the shared ledger"])
+    ]));
+    var internalCheck = el("input", { type: "checkbox", id: "internal-check" });
+    card.appendChild(el("div", { style: "margin-top:8px; display:flex; align-items:center; gap:8px;" }, [
+      internalCheck, el("label", { for: "internal-check", style: "font-size:13px; color:var(--muted);" }, ["Internal participant (doTERRA staff), rather than a customer"])
+    ]));
+    var startBtn = el("button", { class: "btn btn-primary cta-primary", disabled: "disabled" }, ["Begin session →", ctaKey()]);
+    function refreshStartState() {
+      var name = input.value.trim();
+      var dup = isDuplicateParticipant(name);
+      nameError.style.display = dup ? "block" : "none";
+      input.setAttribute("aria-invalid", String(dup));
+      startBtn.disabled = !name || dup;
+    }
+    input.addEventListener("input", refreshStartState);
+    refreshStartState();
+    startBtn.addEventListener("click", function () { beginSession(input.value.trim(), practice.checked, internalCheck.checked); });
+    card.appendChild(el("div", { class: "btn-row" }, [startBtn]));
+
+    var mode = storageMode();
+    if (mode === "none") {
+      card.appendChild(el("div", { class: "warn-note" }, ["No results storage is available in this view. Sessions will still run, but results won’t be saved anywhere."]));
+    } else if (mode === "local") {
+      card.appendChild(el("div", { class: "warn-note" }, [
+        "Results are being saved to this browser’s local storage only, not synced across devices, and cleared browsing data would take them with it. Export from the Ledger tab regularly to keep a copy elsewhere, or open the published Artifact for a live, shared ledger."
+      ]));
+    }
+    if (window.innerWidth < 760) {
+      card.appendChild(el("div", { class: "info-note" }, [
+        "This screen is narrow for a sorting board. It will stack into a single column and still work, but a tablet or laptop gives the participant a far better view of their groups."
+      ]));
+    }
+
+    var details = el("details", { class: "method" });
+    details.appendChild(el("summary", {}, ["Method, for the moderator"]));
+    details.appendChild(el("div", { class: "body" }, [
+      "Read the prompt aloud and then stay quiet. Don't explain what a category means, if they ask, turn it back (\"where would you expect it to be?\"). " +
+      "The thinking aloud is the primary data here: at 6 to 10 participants a card sort gives you patterns to investigate, not percentages to quote. " +
+      "The commonly cited baseline for stable clusters is around 15 participants, so treat every number in the Ledger as directional and lean on the notes and the Other reasons. " +
+      (s.mode === "hybrid" ? "This is a hybrid sort, so the categories on screen will anchor people and push agreement scores up. Read them against that, and pay close attention to any group they add themselves. " : "") +
+      agreementRuleText()
+    ]));
+    card.appendChild(details);
+
+    if (!resumeBanner) return card;
+    var frag = document.createDocumentFragment();
+    frag.appendChild(resumeBanner);
+    frag.appendChild(card);
+    return frag;
+  }
+
+  function renderPreview() {
+    var card = el("div", { class: "card handoff-card" });
+    card.appendChild(el("div", { class: "eyebrow" }, [
+      "MODERATOR" + (sortCount() > 1 ? " · SORT " + (sortIndex + 1) + " OF " + sortCount() : "") + (practiceRun ? " · PRACTICE" : "")
+    ]));
+    card.appendChild(renderHandoffGraphic("participant"));
+    card.appendChild(el("div", { class: "scenario" }, [retakePending ? "Ready to sort again." : "Ready for the sort."]));
+    card.appendChild(el("p", { class: "hint" }, [retakePending
+      ? "Hand the device back to the participant. The previous attempt was discarded, they’ll start from a fresh deck."
+      : "Hand the device to the participant now. They’ll read the task themselves and start when they’re ready, nothing else is on their screen."]));
+    card.appendChild(el("div", { class: "btn-row" }, [
+      el("button", { class: "btn btn-primary btn-big cta-primary", onclick: goBrief }, ["Pass to participant →", ctaKey()])
+    ]));
+    return card;
+  }
+
+  function renderBrief() {
+    var s = currentSort();
+    var isFirst = sortIndex === 0;
+    var card = el("div", { class: "card" });
+    card.appendChild(el("div", { class: "eyebrow muted" }, ["PARTICIPANT"]));
+    card.appendChild(el("div", { class: "progress-row" }, [
+      el("span", { class: "step" }, [
+        (sortCount() > 1 ? "SORT " + (sortIndex + 1) + " OF " + sortCount() + " · " : "") + plural(s.cards.length, "card")
+      ]),
+      practiceRun ? el("span", { class: "timer" }, ["00:00"]) : null
+    ]));
+    card.appendChild(el("div", { class: "scenario", id: isFirst ? "onboard-target-prompt" : undefined }, [s.prompt]));
+    card.appendChild(el("p", { class: "hint" }, [
+      "There's no right answer and no time limit. If something doesn't fit anywhere, there's a place for that too."
+    ]));
+    card.appendChild(el("div", { class: "btn-row", style: "align-items:center;" }, [
+      el("button", { class: "btn btn-primary cta-primary", id: isFirst ? "onboard-target-start" : undefined, onclick: goSorting }, ["Start →", ctaKey()]),
+      el("span", { class: "think-aloud-note" }, [
+        el("span", { class: "think-aloud-icon", html: SPEECH_ICON }),
+        "Remember to think out loud as you go"
+      ])
+    ]));
+    return card;
+  }
+
+  function renderReturn() {
+    var card = el("div", { class: "card handoff-card" });
+    card.appendChild(el("div", { class: "eyebrow muted" }, ["HANDOFF"]));
+    card.appendChild(renderHandoffGraphic("moderator"));
+    card.appendChild(el("div", { class: "scenario" }, ["All done, thank you."]));
+    card.appendChild(el("p", { class: "hint" }, ["Please hand the device back to the moderator."]));
+    card.appendChild(el("div", { class: "btn-row" }, [
+      el("button", { class: "btn btn-primary btn-big cta-primary", onclick: goCapture }, ["I’m the moderator →", ctaKey()])
+    ]));
+    return card;
+  }
+
+  function renderSortSummary(r, compact) {
+    var wrap = el("div", {});
+    var stats = el("div", { class: "stat-row", style: compact ? "margin-bottom:12px;" : "" }, [
+      el("div", { class: "stat-tile" }, [
+        el("div", { class: "n" }, [String((r.groups || []).filter(function (g) { return !g.fixed; }).length)]),
+        el("div", { class: "l" }, ["Groups added"])
+      ]),
+      el("div", { class: "stat-tile" }, [
+        el("div", { class: "n" }, [String((r.other || []).length)]),
+        el("div", { class: "l" }, ["In Other"])
+      ]),
+      el("div", { class: "stat-tile" }, [
+        el("div", { class: "n" }, [String((r.unsorted || []).length)]),
+        el("div", { class: "l" }, ["Left in deck"])
+      ]),
+      el("div", { class: "stat-tile" }, [
+        el("div", { class: "n" }, [fmtTime(r.timeMs || 0)]),
+        el("div", { class: "l" }, ["Time"])
+      ]),
+      el("div", { class: "stat-tile" }, [
+        el("div", { class: "n" }, [String(r.moves || 0)]),
+        el("div", { class: "l" }, ["Card moves"])
+      ])
+    ]);
+    wrap.appendChild(stats);
+
+    var scroll = el("div", { class: "table-scroll" });
+    var table = el("table");
+    table.appendChild(el("thead", {}, [el("tr", {}, [
+      el("th", {}, ["Group"]), el("th", { class: "num" }, ["Cards"]), el("th", {}, ["Contents"])
+    ])]));
+    var tbody = el("tbody");
+    (r.groups || []).forEach(function (g) {
+      tbody.appendChild(el("tr", {}, [
+        el("td", {}, [
+          el("span", { style: "font-weight:600;" }, [g.name || "(unnamed group)"]),
+          g.fixed ? null : el("div", { class: "hint", style: "margin:0; font-size:11px;" }, ["Added by participant"])
+        ]),
+        el("td", { class: "num" }, [String((g.cards || []).length)]),
+        el("td", {}, [(g.cards || []).join(", ")])
+      ]));
+    });
+    (r.other || []).forEach(function (o) {
+      tbody.appendChild(el("tr", {}, [
+        el("td", {}, [el("span", { class: "badge mixed" }, [OTHER_LABEL])]),
+        el("td", { class: "num" }, ["1"]),
+        el("td", {}, [
+          o.card,
+          el("div", { class: "other-reason-read" }, [o.reason ? "“" + o.reason + "”" : "No reason given"])
+        ])
+      ]));
+    });
+    if ((r.unsorted || []).length) {
+      tbody.appendChild(el("tr", {}, [
+        el("td", {}, [el("span", { class: "badge neutral" }, ["Left in deck"])]),
+        el("td", { class: "num" }, [String(r.unsorted.length)]),
+        el("td", {}, [r.unsorted.join(", ")])
+      ]));
+    }
+    table.appendChild(tbody);
+    scroll.appendChild(table);
+    wrap.appendChild(scroll);
+    return wrap;
+  }
+
+  function renderCapture() {
+    var r = results[results.length - 1];
+    var card = el("div", { class: "card" });
+    card.appendChild(el("div", { class: "eyebrow" }, ["MODERATOR"]));
+    card.appendChild(el("h2", {}, [sortCount() > 1 ? "Sort " + (sortIndex + 1) + " logged" : "Sort logged"]));
+    card.appendChild(el("p", { class: "hint" }, ["What they built, before you ask them about it."]));
+    card.appendChild(renderSortSummary(r, true));
+
+    card.appendChild(el("label", { class: "field", style: "margin-top:18px;" }, ["Confidence, ask the participant"]));
+    var chips = el("div", { class: "chip-row", style: "margin-bottom:4px;", role: "group", "aria-label": "Confidence, from 1, not at all confident, to 5, very confident" });
+    [1, 2, 3, 4, 5].forEach(function (v) {
+      chips.appendChild(el("button", {
+        class: "chip" + (confidence === v ? " selected" : ""),
+        "aria-pressed": String(confidence === v),
+        onclick: function () { setConfidence(v); }
+      }, [String(v)]));
+    });
+    card.appendChild(chips);
+    // Anchor labels on the ends only -- enough to tell 1 and 5 apart
+    // without a caption under every chip.
+    card.appendChild(el("div", { class: "hint", "aria-hidden": "true", style: "display:flex; justify-content:space-between; max-width:220px; margin:0 0 8px; font-size:11px;" }, [
+      el("span", {}, ["Not confident"]), el("span", {}, ["Very confident"])
+    ]));
+    if (confidence == null) {
+      card.appendChild(el("p", { class: "hint", style: "margin:0 0 16px; font-size:12px;" }, ["Required before you can continue."]));
+    } else {
+      card.appendChild(el("div", { style: "margin-bottom:16px;" }));
+    }
+    card.appendChild(el("label", { class: "field" }, ["Notes"]));
+    var notes = el("textarea", { placeholder: "What they said while sorting, what they hesitated over, which groups they rebuilt…" });
+    notes.value = r.notes || "";
+    notes.addEventListener("input", function () { setNotes(notes.value); });
+    card.appendChild(notes);
+    card.appendChild(el("p", { class: "hint", style: "margin:6px 0 0; font-size:12px;" }, [
+      "At this sample size these notes carry more weight than the agreement percentages. Write down the reasoning, not just the outcome."
+    ]));
+
+    if (confirmRetake) {
+      // Retaking only redoes the sort just logged -- a routine, easily
+      // repeated moderator action, so it reads as a plain caution rather
+      // than the harder stop reserved for ending the whole session.
+      card.appendChild(el("div", {
+        class: "warn-note", role: "alertdialog", "aria-label": "Confirm retake sort",
+        style: "display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;"
+      }, [
+        el("span", {}, ["Discard this result and sort a fresh deck from the start?"]),
+        el("div", { style: "display:flex; gap:8px;" }, [
+          el("button", {
+            id: "retake-cancel-btn", class: "btn btn-ghost",
+            onclick: function () {
+              confirmRetake = false;
+              scheduleFocus(function () { return document.getElementById("retake-sort-btn"); });
+              render();
+            }
+          }, ["Cancel"]),
+          el("button", { class: "btn btn-primary", onclick: retakeSort }, ["Yes, retake"])
+        ])
+      ]));
+    }
+
+    var remaining = sortCount() - (sortIndex + 1);
+    if (confirmEndSession) {
+      // Ending early finalises the session and the remaining sorts never
+      // run, so it gets the stronger treatment.
+      card.appendChild(el("div", {
+        class: "warn-note", role: "alertdialog", "aria-label": "Confirm end session early",
+        style: "display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; color:var(--fail); background:var(--fail-bg);"
+      }, [
+        el("span", {}, ["End the session now? " + plural(results.length, "sort") + " will be " +
+          (practiceRun ? "kept for this screen only (practice run, not saved to the ledger)." : "saved to the shared ledger.") +
+          " The remaining " + plural(remaining, "sort") + " won’t run."]),
+        el("div", { style: "display:flex; gap:8px;" }, [
+          el("button", {
+            id: "end-session-cancel-btn", class: "btn btn-ghost",
+            onclick: function () {
+              confirmEndSession = false;
+              scheduleFocus(function () { return document.getElementById("end-session-btn"); });
+              render();
+            }
+          }, ["Cancel"]),
+          el("button", { class: "btn btn-primary", style: "background:var(--fail);", onclick: endSessionEarly }, ["Yes, end session"])
+        ])
+      ]));
+    }
+
+    if (!confirmRetake && !confirmEndSession) {
+      var rowButtons = [el("button", {
+        id: "retake-sort-btn", class: "btn btn-ghost",
+        onclick: function () {
+          confirmRetake = true;
+          scheduleFocus(function () { return document.getElementById("retake-cancel-btn"); });
+          render();
+        }
+      }, ["Retake sort"])];
+      if (remaining > 0) {
+        rowButtons.push(el("button", {
+          id: "end-session-btn", class: "btn btn-ghost", style: "color:var(--fail); border-color:var(--fail);",
+          onclick: function () {
+            confirmEndSession = true;
+            scheduleFocus(function () { return document.getElementById("end-session-cancel-btn"); });
+            render();
+          }
+        }, ["End session"]));
+      }
+      var continueBtn = el("button", { class: "btn btn-primary cta-primary", onclick: nextSort },
+        [remaining <= 0 ? "Finish session →" : "Save & next sort →", ctaKey()]);
+      if (confidence == null) continueBtn.disabled = true;
+      rowButtons.push(continueBtn);
+      card.appendChild(el("div", { class: "btn-row" }, rowButtons));
+    }
+    return card;
+  }
+
+  function renderDone() {
+    var card = el("div", { class: "card" });
+    card.appendChild(el("h2", {}, [endedEarly ? "Session ended early" : "Session complete"]));
+    card.appendChild(el("p", { class: "hint" }, [
+      (endedEarly ? results.length + " of " + sortCount() + " sort(s) run. " : "") +
+      (practiceRun ? "Practice run, not saved to the ledger." : "Saved to the shared ledger.") +
+      " Participant: " + participant + " (" + (participantInternal ? "Internal, doTERRA staff" : "External, customer") + ")"
+    ]));
+    results.forEach(function (r, i) {
+      if (results.length > 1) card.appendChild(el("h3", { style: "margin-top:18px;" }, ["Sort " + (i + 1)]));
+      card.appendChild(renderSortSummary(r));
+      if (r.notes) card.appendChild(el("p", { class: "hint", style: "margin-top:10px;" }, ["Notes: " + r.notes]));
+    });
+    card.appendChild(el("div", { class: "btn-row" }, [
+      el("button", { class: "btn btn-primary cta-primary", onclick: startSetup }, ["Start next participant →", ctaKey()]),
+      el("button", { class: "btn btn-ghost", onclick: function () { view = "ledger"; subscribeLedger(); render(); } }, ["View ledger"])
+    ]));
+    return card;
+  }
+
+  // ---------- Ledger view ----------
+  function findExportWrap(menuId) {
+    var wraps = document.querySelectorAll(".export-menu-wrap");
+    for (var i = 0; i < wraps.length; i++) if (wraps[i].dataset.menuId === String(menuId)) return wraps[i];
+    return null;
+  }
+  function closeExportMenu() {
+    var prev = openExportMenu;
+    openExportMenu = null;
+    scheduleFocus(function () { var w = findExportWrap(prev); return w ? w.firstElementChild : null; });
+    render();
+  }
+
+  function renderExportMenu(menuId, docsProvider, filenameBase, showLabel, includeMatrix) {
+    var isOpen = openExportMenu === menuId;
+    var wrap = el("div", { class: "export-menu-wrap", "data-menu-id": String(menuId) });
+    var toggle = el("button", {
+      class: showLabel ? "btn btn-ghost" : "icon-btn",
+      style: showLabel ? "display:inline-flex; align-items:center; gap:6px;" : "",
+      "aria-label": "Export", title: "Export",
+      "aria-haspopup": "true", "aria-expanded": String(isOpen)
+    }, showLabel
+      ? [el("span", { style: "display:inline-flex;", html: EXPORT_ICON }), "Export", el("span", { style: "display:inline-flex;", html: CHEVRON_ICON, class: "chevron-down" })]
+      : [el("span", { style: "display:inline-flex;", html: EXPORT_ICON })]);
+    toggle.addEventListener("click", function () {
+      var opening = !isOpen;
+      openExportMenu = isOpen ? null : menuId;
+      scheduleFocus(function () {
+        var w = findExportWrap(menuId);
+        if (!w) return null;
+        return opening ? w.querySelector(".export-menu button") : w.firstElementChild;
+      });
+      render();
+    });
+    wrap.appendChild(toggle);
+
+    if (isOpen) {
+      // Downloading never depends on the Artifact's own `downloads`
+      // capability -- saveFile() falls back to a plain browser download
+      // when it isn't there, so these work published or standalone.
+      var menu = el("div", { class: "export-menu", role: "menu" });
+      var items = [["Download CSV (one row per card)", downloadCsv]];
+      if (includeMatrix) items.push(["Download co-occurrence matrix (CSV)", downloadMatrix]);
+      items.push(["Download Markdown report", downloadMarkdown]);
+      items.push(["Download JSON", downloadJson]);
+      items.forEach(function (pair) {
+        var btn = el("button", { role: "menuitem" }, [pair[0]]);
+        btn.addEventListener("click", function () {
+          pair[1](docsProvider(), filenameBase);
+          openExportMenu = null;
+          scheduleFocus(function () { var w = findExportWrap(menuId); return w ? w.firstElementChild : null; });
+          render();
+        });
+        menu.appendChild(btn);
+      });
+      var copyBtn = el("button", { role: "menuitem" }, ["Copy as CSV"]);
+      copyBtn.addEventListener("click", function () { copyToClipboard(csvForDocs(docsProvider()), copyBtn); });
+      menu.appendChild(copyBtn);
+      wrap.appendChild(menu);
+    }
+    return wrap;
+  }
+
+  function renderSortAnalysis(s, idx) {
+    var a = analysisForSort(idx);
+    var frag = document.createDocumentFragment();
+
+    var summary = el("div", { class: "card" });
+    summary.appendChild(el("h2", {}, [sortCount() > 1 ? "Sort " + (idx + 1) + " · results" : "Results"]));
+    summary.appendChild(el("p", { class: "hint" }, [s.prompt]));
+    if (!a.n) {
+      summary.appendChild(el("div", { class: "empty" }, ["No sessions saved for this sort yet. Run one from the Session tab."]));
+      frag.appendChild(summary);
+      return frag;
+    }
+    summary.appendChild(el("div", { class: "stat-row" }, [
+      el("div", { class: "stat-tile" }, [el("div", { class: "n" }, [String(a.n)]), el("div", { class: "l" }, ["Participants"])]),
+      el("div", { class: "stat-tile" }, [el("div", { class: "n" }, [fmtTime(a.medianTime)]), el("div", { class: "l" }, ["Median time"])]),
+      el("div", { class: "stat-tile" }, [el("div", { class: "n" }, [String(a.medianCustom)]), el("div", { class: "l" }, ["Median groups added"])]),
+      el("div", { class: "stat-tile" }, [el("div", { class: "n" }, [String(a.medianUnsorted)]), el("div", { class: "l" }, ["Median left in deck"])]),
+      el("div", { class: "stat-tile" }, [el("div", { class: "n" }, [String(a.medianMoves)]), el("div", { class: "l" }, ["Median card moves"])])
+    ]));
+    // The single most important caveat on this screen, so it sits above
+    // the tables rather than in a collapsed note under them.
+    summary.appendChild(el("div", { class: "info-note", style: "margin-top:0;" }, [
+      a.n < 15
+        ? "Directional only: " + plural(a.n, "participant") + " is below the ~15 where card-sort clusters settle down. Treat these as patterns to investigate against the session notes, not as figures to quote."
+        : agreementRuleText()
+    ]));
+    if (s.mode === "hybrid") {
+      summary.appendChild(el("div", { class: "info-note" }, [
+        "This is a hybrid sort. The categories on screen anchor participants, so agreement here reads higher than the same cards sorted openly would. The groups people added themselves, below, are where the gaps show."
+      ]));
+    }
+    frag.appendChild(summary);
+
+    // --- Per-card agreement, weakest first: the cards that need work are
+    // the point of the table, so they don't get buried under the settled ones.
+    var cardsCard = el("div", { class: "card" });
+    cardsCard.appendChild(el("h3", {}, ["Card agreement"]));
+    cardsCard.appendChild(el("p", { class: "hint" }, ["Least agreed first. " + agreementRuleText()]));
+    var cs = el("div", { class: "table-scroll" });
+    var ct = el("table");
+    ct.appendChild(el("thead", {}, [el("tr", {}, [
+      el("th", {}, ["Card"]), el("th", { class: "num" }, ["N"]), el("th", {}, ["Most common group"]),
+      el("th", { class: "num" }, ["Agreement"]), el("th", {}, ["Band"]),
+      el("th", { class: "num" }, ["Groups used"]), el("th", { class: "num" }, ["Other"]), el("th", { class: "num" }, ["In deck"])
+    ])]));
+    var ctb = el("tbody");
+    a.cards.forEach(function (c) {
+      ctb.appendChild(el("tr", {}, [
+        el("td", {}, [c.card]),
+        el("td", { class: "num" }, [String(c.n)]),
+        el("td", {}, [c.top || "None"]),
+        el("td", { class: "num" }, [c.topPct == null ? "·" : c.topPct + "%"]),
+        el("td", {}, [el("span", { class: "badge " + agreementBand(c.topPct) }, [agreementLabel(c.topPct)])]),
+        el("td", { class: "num" }, [String(c.distinctGroups)]),
+        el("td", { class: "num" }, [c.parked ? c.parked + " (" + c.parkedPct + "%)" : "·"]),
+        el("td", { class: "num" }, [c.unsorted ? c.unsorted + " (" + c.unsortedPct + "%)" : "·"])
+      ]));
+    });
+    ct.appendChild(ctb);
+    cs.appendChild(ct);
+    cardsCard.appendChild(cs);
+    frag.appendChild(cardsCard);
+
+    // --- Other / doesn't fit, with reasons. At a small sample this is the
+    // most directly actionable table on the page.
+    if (a.parked.length) {
+      var parkedCard = el("div", { class: "card" });
+      parkedCard.appendChild(el("h3", {}, ["Cards nobody could place"]));
+      parkedCard.appendChild(el("p", { class: "hint" }, [
+        "Parked in " + OTHER_LABEL + ", with whatever the participant said about why. A card here with a consistent reason is a label or a category problem you can act on without waiting for a bigger sample."
+      ]));
+      var ps = el("div", { class: "table-scroll" });
+      var pt = el("table");
+      pt.appendChild(el("thead", {}, [el("tr", {}, [
+        el("th", {}, ["Card"]), el("th", { class: "num" }, ["Parked by"]), el("th", {}, ["Reasons given"])
+      ])]));
+      var ptb = el("tbody");
+      a.parked.forEach(function (c) {
+        var reasons = el("td", {});
+        if (!c.reasons.length) {
+          reasons.appendChild(el("span", { class: "hint", style: "margin:0;" }, ["No reasons given"]));
+        } else {
+          c.reasons.forEach(function (x) {
+            reasons.appendChild(el("div", { style: "margin-bottom:4px;" }, [
+              el("span", { style: "font-weight:600;" }, [x.participant + ": "]),
+              el("span", {}, ["“" + x.reason + "”"])
+            ]));
+          });
+        }
+        ptb.appendChild(el("tr", {}, [
+          el("td", {}, [c.card]),
+          el("td", { class: "num" }, [c.parked + " of " + c.n]),
+          reasons
+        ]));
+      });
+      pt.appendChild(ptb);
+      ps.appendChild(pt);
+      parkedCard.appendChild(ps);
+      frag.appendChild(parkedCard);
+    }
+
+    // --- Groups participants invented: what the proposed structure is missing.
+    if (a.addedGroups.length) {
+      var addedCard = el("div", { class: "card" });
+      addedCard.appendChild(el("h3", {}, ["Groups participants added"]));
+      addedCard.appendChild(el("p", { class: "hint" }, [
+        "Names are matched ignoring case and spacing, nothing cleverer, so near-misses like “Daily use” and “Everyday” stay on separate rows. Read them together."
+      ]));
+      var as = el("div", { class: "table-scroll" });
+      var at = el("table");
+      at.appendChild(el("thead", {}, [el("tr", {}, [
+        el("th", {}, ["Group name"]), el("th", { class: "num" }, ["Times created"]), el("th", { class: "num" }, ["Median size"])
+      ])]));
+      var atb = el("tbody");
+      a.addedGroups.forEach(function (g) {
+        atb.appendChild(el("tr", {}, [
+          el("td", {}, [g.name]),
+          el("td", { class: "num" }, [String(g.uses)]),
+          el("td", { class: "num" }, [String(g.medianSize)])
+        ]));
+      });
+      at.appendChild(atb);
+      as.appendChild(at);
+      addedCard.appendChild(as);
+      frag.appendChild(addedCard);
+    }
+
+    // --- Card pairs.
+    if (a.pairs.length) {
+      var pairCard = el("div", { class: "card" });
+      pairCard.appendChild(el("h3", {}, ["Cards that travel together"]));
+      pairCard.appendChild(el("p", { class: "hint" }, [
+        "How often two cards ended up in the same group, out of the participants who placed both. Cards parked in Other or left in the deck are excluded, since refusing to file two things isn't evidence they belong together. Full matrix is in the export."
+      ]));
+      var shown = expandedPairs ? a.pairs : a.pairs.slice(0, 12);
+      var prs = el("div", { class: "table-scroll" });
+      var prt = el("table");
+      prt.appendChild(el("thead", {}, [el("tr", {}, [
+        el("th", {}, ["Card A"]), el("th", {}, ["Card B"]), el("th", { class: "num" }, ["Together"]), el("th", { class: "num" }, ["Of"])
+      ])]));
+      var prtb = el("tbody");
+      shown.forEach(function (p) {
+        prtb.appendChild(el("tr", {}, [
+          el("td", {}, [p.a]), el("td", {}, [p.b]),
+          el("td", { class: "num" }, [p.pct + "%"]),
+          el("td", { class: "num" }, [String(p.both)])
+        ]));
+      });
+      prt.appendChild(prtb);
+      prs.appendChild(prt);
+      pairCard.appendChild(prs);
+      if (a.pairs.length > 12) {
+        pairCard.appendChild(el("div", { class: "btn-row" }, [
+          el("button", {
+            class: "btn btn-ghost",
+            onclick: function () { expandedPairs = !expandedPairs; render(); }
+          }, [expandedPairs ? "Show top 12 only" : "Show all " + a.pairs.length + " pairs"])
+        ]));
+      }
+      frag.appendChild(pairCard);
+    }
+    return frag;
+  }
+
+  function renderLedger() {
+    subscribeLedger();
+    var frag = document.createDocumentFragment();
+    var mode = storageMode();
+    if (mode === "none") {
+      frag.appendChild(el("div", { class: "card" }, [el("div", { class: "empty" }, ["No results storage is available in this view, so there’s nothing to show yet."])]));
+      return frag;
+    }
+
+    (activeStudy.sorts || DEFAULT_SORTS).forEach(function (s, idx) {
+      frag.appendChild(renderSortAnalysis(s, idx));
+    });
+
+    var raw = el("div", { class: "card" });
+    raw.appendChild(el("div", { style: "display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;" }, [
+      el("h2", { style: "margin:0;" }, ["Session log"]),
+      el("div", { style: "display:flex; gap:8px;" }, [
+        ledgerDocs.length ? renderExportMenu("header", function () { return ledgerDocs; }, "grouping-study-results", true, true) : null,
+        ledgerDocs.length ? el("button", {
+          id: "clear-all-btn",
+          class: "btn btn-ghost", style: "color:var(--fail); border-color:var(--fail); display:inline-flex; align-items:center; gap:6px;",
+          onclick: function () {
+            confirmClearAll = true;
+            scheduleFocus(function () { return document.getElementById("ledger-clearall-cancel"); });
+            render();
+          }
+        }, [el("span", { style: "display:inline-flex;", html: TRASH_ICON }), "Clear all data"]) : null
+      ])
+    ]));
+    if (mode === "local") {
+      raw.appendChild(el("div", { style: "margin-top:6px; color:var(--muted); font-size:14px; max-width:60ch;" }, [
+        "Saved to this browser’s local storage only, not synced to other devices. Use Export regularly to keep a copy elsewhere."
+      ]));
+    }
+
+    if (confirmClearAll) {
+      raw.appendChild(el("div", {
+        class: "warn-note", role: "alertdialog", "aria-label": "Confirm delete all sessions",
+        style: "display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:12px; color:var(--fail); background:var(--fail-bg);"
+      }, [
+        el("span", {}, ["Delete all " + plural(ledgerDocs.length, "saved session") + "? This can't be undone."]),
+        el("div", { style: "display:flex; gap:8px;" }, [
+          el("button", {
+            id: "ledger-clearall-cancel", class: "btn btn-ghost",
+            onclick: function () {
+              confirmClearAll = false;
+              scheduleFocus(function () { return document.getElementById("clear-all-btn"); });
+              render();
+            }
+          }, ["Cancel"]),
+          el("button", { class: "btn btn-primary", style: "background:var(--fail);", onclick: clearAllSessions }, ["Yes, delete all"])
+        ])
+      ]));
+    }
+
+    if (!ledgerDocs.length) {
+      raw.appendChild(el("div", { class: "empty" }, ["No sessions saved yet. Run one from the Session tab."]));
+    } else {
+      ledgerDocs.forEach(function (doc) {
+        var block = el("div", { style: "margin-top:18px; padding-top:14px; border-top:1px solid var(--line);" });
+        var isConfirming = confirmDeleteId === doc._id;
+        var isExpanded = !!expandedSessions[doc._id];
+
+        var nameRow = el("button", {
+          class: "session-row-toggle", "data-doc-id": doc._id, "aria-expanded": String(isExpanded),
+          onclick: function () {
+            expandedSessions[doc._id] = !expandedSessions[doc._id];
+            scheduleFocus(function () { return findSessionToggle(doc._id); });
+            render();
+          }
+        }, [
+          el("span", { class: "session-chevron" + (isExpanded ? " expanded" : ""), "aria-hidden": "true", html: CHEVRON_ICON }),
+          el("span", { style: "font-weight:600;" }, [doc.participant || "(unnamed)"]),
+          el("span", { class: "badge neutral" }, [doc.participantInternal ? "Internal" : "External"]),
+          doc.status === "in-progress" ? el("span", { class: "badge mixed" }, ["In progress"]) : null,
+          el("span", { class: "hint", style: "font-size:12px; margin:0;" }, [
+            plural((doc.results || []).length, "sort") + (doc.finishedAt ? " · " + new Date(doc.finishedAt).toLocaleString() : "")
+          ])
+        ]);
+
+        var actions = isConfirming
+          ? el("div", { role: "alertdialog", "aria-label": "Confirm delete session", style: "display:flex; gap:8px; align-items:center;" }, [
+              el("span", { class: "hint", style: "font-size:12px; margin:0;" }, ["Delete this session?"]),
+              el("button", {
+                id: "ledger-delete-cancel", class: "btn btn-ghost",
+                onclick: function () {
+                  confirmDeleteId = null;
+                  scheduleFocus(function () { return findDeleteBtn(doc._id); });
+                  render();
+                }
+              }, ["Cancel"]),
+              el("button", { class: "btn btn-primary", style: "background:var(--fail);", onclick: function () { deleteSession(doc._id); } }, ["Confirm"])
+            ])
+          : el("div", { style: "display:flex; gap:6px; align-items:center;" }, [
+              renderExportMenu(doc._id, function () { return [doc]; }, "grouping-study-" + slugify(doc.participant), false, false),
+              el("button", {
+                class: "icon-btn ledger-delete-btn", "data-doc-id": doc._id,
+                "aria-label": "Delete session", title: "Delete session",
+                onclick: function () {
+                  confirmDeleteId = doc._id;
+                  scheduleFocus(function () { return document.getElementById("ledger-delete-cancel"); });
+                  render();
+                },
+                html: TRASH_ICON
+              })
+            ]);
+
+        block.appendChild(el("div", { style: "display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;" }, [nameRow, actions]));
+
+        if (isExpanded) {
+          (doc.results || []).forEach(function (r, resultIndex) {
+            var detail = el("div", { style: "margin-top:14px;" });
+            detail.appendChild(el("div", { class: "eyebrow muted", style: "margin-bottom:6px;" }, [
+              (((doc.results || []).length > 1) ? "SORT " + (r.sortIndex + 1) + " · " : "") +
+              fmtTime(r.timeMs || 0) + " · " + plural(r.moves || 0, "move") +
+              " · CONFIDENCE " + (r.confidence == null ? "·" : r.confidence)
+            ]));
+            detail.appendChild(renderSortSummary(r, true));
+            var notesArea = el("textarea", { class: "notes-edit", rows: "2", placeholder: "Add a note…" });
+            notesArea.value = r.notes || "";
+            var saveBtn = el("button", { class: "btn btn-ghost notes-save" }, ["Save"]);
+            saveBtn.disabled = true;
+            notesArea.addEventListener("input", function () { saveBtn.disabled = notesArea.value === (r.notes || ""); });
+            saveBtn.addEventListener("click", function () {
+              saveBtn.disabled = true;
+              updateSessionNotes(doc._id, resultIndex, notesArea.value, saveBtn);
+            });
+            detail.appendChild(el("label", { class: "field", style: "margin-top:12px;" }, ["Moderator notes"]));
+            detail.appendChild(notesArea);
+            detail.appendChild(saveBtn);
+            block.appendChild(detail);
+          });
+        }
+        raw.appendChild(block);
+      });
+    }
+    frag.appendChild(raw);
+    return frag;
+  }
+
+  // ---------- Content view ----------
+  function renderContent() {
+    if (sortsDraft == null) sortsDraft = JSON.stringify(activeStudy.sorts, null, 2);
+    if (strongDraft == null) strongDraft = String(activeStudy.agreementStrong);
+    if (weakDraft == null) weakDraft = String(activeStudy.agreementWeak);
+    if (deckWarnDraft == null) deckWarnDraft = String(activeStudy.deckWarnAt);
+    if (shuffleDraft == null) shuffleDraft = activeStudy.shuffleCards !== false;
+
+    var frag = document.createDocumentFragment();
+    var mode = storageMode();
+
+    var intro = el("div", { class: "card" });
+    intro.appendChild(el("div", { style: "display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;" }, [
+      el("h2", { style: "margin:0;" }, ["Content"]),
+      el("span", { class: "hint", style: "margin:0; font-size:12px;" }, [
+        "Live: v" + activeContentVersion + (contentUpdatedAt ? " · saved " + new Date(contentUpdatedAt).toLocaleString() : "")
+      ])
+    ]));
+    intro.appendChild(el("p", { class: "hint" }, [
+      mode === "shared"
+        ? "Edit the deck, the categories and the prompt participants see, as plain JSON. Saved changes sync to every device running this tool, as a new version, and past sessions keep the version they ran against."
+        : mode === "local"
+          ? "Edit the deck, the categories and the prompt participants see, as plain JSON. Saved changes are kept in this browser's local storage only, as a new version, and won't sync to any other device or the published Artifact."
+          : "Edit the deck, the categories and the prompt participants see, as plain JSON. No storage is available in this view, so changes apply here only and won't be saved for next time."
+    ]));
+    var inFlight = ledgerDocs.filter(function (d) { return d.status === "in-progress"; }).length;
+    if (mode !== "none" && inFlight > 0) {
+      intro.appendChild(el("div", { class: "warn-note" }, [
+        "Heads up: " + inFlight + " session" + (inFlight === 1 ? " is" : "s are") + " currently in progress on v" + activeContentVersion +
+        ". Saving publishes v" + (activeContentVersion + 1) +
+        (mode === "shared" ? " to every device immediately." : " immediately.") +
+        " Those sessions keep the v" + activeContentVersion + " tag they started with, but the next deck handed over will use the updated content."
+      ]));
+    }
+    if (contentError) intro.appendChild(el("div", { class: "warn-note", style: "color:var(--fail); background:var(--fail-bg);" }, [contentError]));
+    if (contentWarning) intro.appendChild(el("div", { class: "warn-note" }, [contentWarning]));
+    frag.appendChild(intro);
+
+    // --- Derive categories from a tree test IA. The whole point of the
+    // pairing is that this study measures agreement against the exact
+    // structure the Wayfinding Trial is validating, so the categories are
+    // computed from that tree rather than retyped and left to drift.
+    var importCard = el("div", { class: "card" });
+    importCard.appendChild(el("h3", {}, ["Derive categories from a tree test IA"]));
+    importCard.appendChild(el("p", { class: "hint" }, [
+      "Paste the navigation structure from the Wayfinding Trial's Content tab. This pulls out its filing level, the branches its destination pages actually sit under, as a category list you can paste into a closed or hybrid sort below. Keeping the two in step is what makes the results comparable."
+    ]));
+    var importArea = el("textarea", { class: "code-editor short", spellcheck: "false", placeholder: '{\n  "Shop": {\n    "Shop by Category": ["Essential Oils", "..."]\n  }\n}' });
+    importArea.value = treeImportDraft;
+    importArea.addEventListener("input", function () { treeImportDraft = importArea.value; });
+    importCard.appendChild(importArea);
+    if (treeImportError) importCard.appendChild(el("div", { class: "warn-note", style: "color:var(--fail); background:var(--fail-bg);" }, [treeImportError]));
+    if (treeImportResult) {
+      var out = el("textarea", { class: "code-editor short", spellcheck: "false", readonly: "readonly" });
+      out.value = JSON.stringify(treeImportResult, null, 2);
+      importCard.appendChild(el("label", { class: "field", style: "margin-top:14px;" }, [plural(treeImportResult.length, "category") + " derived"]));
+      importCard.appendChild(out);
+      var copyDerived = el("button", { class: "btn btn-ghost" }, ["Copy"]);
+      copyDerived.addEventListener("click", function () { copyToClipboard(out.value, copyDerived, out); });
+      var applyBtn = el("button", { class: "btn btn-primary" }, ["Apply to sort 1"]);
+      applyBtn.addEventListener("click", function () {
+        var parsed;
+        try { parsed = JSON.parse(sortsDraft); } catch (e) {
+          contentError = "Can't apply: the sorts JSON below isn't valid right now (" + e.message + ").";
+          render();
+          return;
+        }
+        if (!Array.isArray(parsed) || !parsed.length) {
+          contentError = "Can't apply: the sorts JSON below must be a non-empty array.";
+          render();
+          return;
+        }
+        parsed[0].categories = treeImportResult.slice();
+        if (parsed[0].mode === "open") parsed[0].mode = "hybrid";
+        sortsDraft = JSON.stringify(parsed, null, 2);
+        contentError = null;
+        contentWarning = "Categories applied to sort 1 in the editor below. Nothing is live until you press Save changes.";
+        render();
+      });
+      importCard.appendChild(el("div", { class: "btn-row" }, [applyBtn, copyDerived]));
+    }
+    var deriveBtn = el("button", { class: "btn btn-ghost" }, ["Derive categories"]);
+    deriveBtn.addEventListener("click", runTreeImport);
+    if (!treeImportResult) importCard.appendChild(el("div", { class: "btn-row" }, [deriveBtn]));
+    else importCard.appendChild(el("div", { class: "btn-row", style: "margin-top:10px;" }, [deriveBtn]));
+    frag.appendChild(importCard);
+
+    // --- Scoring and presentation knobs.
+    var scoringCard = el("div", { class: "card" });
+    scoringCard.appendChild(el("h3", {}, ["Reading the results"]));
+    scoringCard.appendChild(el("p", { class: "hint" }, ["Where the Ledger draws the line between a card the structure handles and one it doesn't."]));
+    var grid = el("div", { style: "display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:16px;" });
+
+    function numField(id, label, hintText, getter, setter) {
+      var wrap = el("div", {});
+      wrap.appendChild(el("label", { class: "field", for: id }, [label]));
+      var inp = el("input", { type: "text", inputmode: "numeric", id: id });
+      inp.value = getter();
+      inp.addEventListener("input", function () { setter(inp.value); });
+      wrap.appendChild(inp);
+      wrap.appendChild(el("p", { class: "hint", style: "margin:6px 0 0; font-size:12px;" }, [hintText]));
+      return wrap;
+    }
+    grid.appendChild(numField("strong-input", "Strong agreement, %", "At or above this, a card reads as settled.",
+      function () { return strongDraft; }, function (v) { strongDraft = v; }));
+    grid.appendChild(numField("weak-input", "Contested below, %", "Under this, a card reads as contested and needs attention.",
+      function () { return weakDraft; }, function (v) { weakDraft = v; }));
+    grid.appendChild(numField("deckwarn-input", "Deck size guide", "Warn on save when a sort has more cards than this.",
+      function () { return deckWarnDraft; }, function (v) { deckWarnDraft = v; }));
+    scoringCard.appendChild(grid);
+
+    var shuffleBox = el("input", { type: "checkbox", id: "shuffle-check" });
+    shuffleBox.checked = shuffleDraft !== false;
+    shuffleBox.addEventListener("change", function () { shuffleDraft = shuffleBox.checked; });
+    scoringCard.appendChild(el("div", { style: "margin-top:16px; display:flex; align-items:flex-start; gap:8px;" }, [
+      shuffleBox,
+      el("label", { for: "shuffle-check", style: "font-size:13px; color:var(--muted);" }, [
+        "Shuffle the deck for each participant. Cards shown first get placed while people are freshest, so a fixed order bakes the same bias into every session. Turn this off only if you need every participant to see the identical order."
+      ])
+    ]));
+    frag.appendChild(scoringCard);
+
+    // --- The study itself.
+    var sortsCard = el("div", { class: "card" });
+    var sortsArea = el("textarea", { class: "code-editor", spellcheck: "false" });
+    sortsArea.value = sortsDraft;
+    sortsArea.addEventListener("input", function () { sortsDraft = sortsArea.value; });
+    var sortsCopyBtn = el("button", { class: "btn btn-ghost" }, ["Copy"]);
+    sortsCopyBtn.addEventListener("click", function () { copyToClipboard(sortsArea.value, sortsCopyBtn, sortsArea); });
+    sortsCard.appendChild(el("div", { style: "display:flex; justify-content:space-between; align-items:center; gap:8px;" }, [
+      el("label", { class: "field", style: "margin-bottom:0;" }, ["Sorts"]),
+      sortsCopyBtn
+    ]));
+    sortsCard.appendChild(el("p", { class: "hint", style: "margin-top:2px; font-size:12px;" }, [
+      'An array of { prompt, tests, mode, cards, categories, allowOther }. Mode is "open" (participants build every group), "closed" (your categories only) or "hybrid" (your categories, plus any they add). Categories are required for closed and hybrid. allowOther turns the ' + OTHER_LABEL + " bay on, which is where the reasons come from."
+    ]));
+    sortsCard.appendChild(sortsArea);
+    sortsCard.appendChild(el("div", { class: "btn-row" }, [
+      el("button", { class: "btn btn-primary", onclick: function () { saveContent(); } }, ["Save changes"]),
+      el("button", {
+        class: "btn btn-ghost",
+        onclick: function () {
+          sortsDraft = null; strongDraft = null; weakDraft = null; deckWarnDraft = null; shuffleDraft = null;
+          contentError = null; contentWarning = null;
+          render();
+        }
+      }, ["Discard edits"]),
+      el("button", { class: "btn btn-ghost", style: "color:var(--fail); border-color:var(--fail);", onclick: resetContent }, ["Reset to default"])
+    ]));
+    frag.appendChild(sortsCard);
+    return frag;
+  }
+
+  // ---------- Root render ----------
+  // A re-render replaces every node, so a participant mid-word in a group
+  // name or an Other reason would lose the caret. These two fields are the
+  // only free-text a participant types on their own screen, so their focus
+  // and cursor position are carried across the rebuild.
+  function captureTextFocus() {
+    var a = document.activeElement;
+    if (!a || !a.classList) return null;
+    var isGroup = a.classList.contains("group-name-input");
+    var isReason = a.classList.contains("other-reason");
+    if (!isGroup && !isReason) return null;
+    return {
+      kind: isGroup ? "group" : "reason",
+      key: isGroup ? a.dataset.groupId : a.dataset.card,
+      start: a.selectionStart, end: a.selectionEnd
+    };
+  }
+  function restoreTextFocus(snap) {
+    if (!snap) return false;
+    var selector = snap.kind === "group" ? ".group-name-input" : ".other-reason";
+    var nodes = document.querySelectorAll(selector);
+    for (var i = 0; i < nodes.length; i++) {
+      var key = snap.kind === "group" ? nodes[i].dataset.groupId : nodes[i].dataset.card;
+      if (key !== snap.key) continue;
+      nodes[i].focus();
+      try { nodes[i].setSelectionRange(snap.start, snap.end); } catch (e) {}
+      return true;
+    }
+    return false;
+  }
+
+  function render() {
+    if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
+      window.claude.hot.snapshot(snapshotState());
+    }
+    var textFocus = captureTextFocus();
+    document.documentElement.setAttribute("data-theme", theme);
+    var app = document.getElementById("app");
+    app.innerHTML = "";
+
+    var showNav = navVisible();
+    app.appendChild(el("header", { class: "top" }, [
+      el("div", { class: "wrap top-inner" }, [
+        el("div", { class: "brand" }, [
+          el("div", { class: "logo", html: LOGO_SVG }),
+          el("h1", {}, ["Grouping Study"])
+        ]),
+        el("div", { style: "display:flex; gap:8px; align-items:center;" }, [
+          showNav ? el("nav", { class: "views" }, [
+            el("button", { class: view === "session" ? "active" : "", "data-view": "session", onclick: function () { switchView("session"); } }, ["Session"]),
+            el("button", { class: view === "ledger" ? "active" : "", "data-view": "ledger", onclick: function () { switchView("ledger"); } }, ["Ledger"]),
+            el("button", { class: view === "content" ? "active" : "", "data-view": "content", onclick: function () { switchView("content"); } }, ["Content"])
+          ]) : null,
+          el("button", {
+            id: "theme-toggle-btn", class: "icon-btn", onclick: toggleTheme,
+            "aria-label": theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
+            title: theme === "dark" ? "Switch to light mode" : "Switch to dark mode",
+            html: theme === "dark" ? SUN_ICON : MOON_ICON
+          }),
+          showNav ? el("button", {
+            id: "shortcuts-btn", class: "icon-btn", onclick: function () { toggleShortcuts(); },
+            "aria-label": "Keyboard shortcuts", title: "Keyboard shortcuts (?)",
+            html: KEYBOARD_ICON
+          }) : null
+        ])
+      ])
+    ]));
+
+    var wide = view === "ledger" || view === "content";
+    var main = el("main", { class: "wrap" + (phase === "sorting" && view === "session" ? " board" : wide ? " wide" : ""), tabindex: "-1" });
+    if (view === "ledger") main.appendChild(renderLedger());
+    else if (view === "content") main.appendChild(renderContent());
+    else if (phase === "setup") main.appendChild(renderSetup());
+    else if (phase === "preview") main.appendChild(renderPreview());
+    else if (phase === "brief") main.appendChild(renderBrief());
+    else if (phase === "sorting") main.appendChild(renderSorting());
+    else if (phase === "naming") main.appendChild(renderNaming());
+    else if (phase === "return") main.appendChild(renderReturn());
+    else if (phase === "capture") main.appendChild(renderCapture());
+    else if (phase === "done") main.appendChild(renderDone());
+
+    var phaseKey = view + ":" + phase;
+    var isNewScreen = phaseKey !== lastPhaseKey;
+    // The board re-renders on every card placement. Replaying the entrance
+    // animation each time would make the whole page jump under the
+    // participant's hand, so it only fires on a genuine screen change.
+    if (isNewScreen) main.classList.add("phase-enter");
+    lastPhaseKey = phaseKey;
+    app.appendChild(main);
+
+    if (phase === "sorting" && startedAt && !onboardPauseStart) startTimerTick(); else stopTimerTick();
+
+    if (onboardStep && (phase === "brief" || phase === "sorting")) requestAnimationFrame(renderOnboardTour);
+    else removeOnboardTour();
+
+    // Keyboard-focus management: a full re-render replaces every element,
+    // so the browser would otherwise drop focus to <body> on every
+    // interaction. A field the participant was typing in wins; then an
+    // action that knows where focus should land; otherwise a genuinely
+    // new screen focuses the main region.
+    if (restoreTextFocus(textFocus)) { pendingFocus = null; return; }
+    if (pendingFocus) {
+      var focusFn = pendingFocus;
+      pendingFocus = null;
+      var target = focusFn();
+      if (target && typeof target.focus === "function") target.focus();
+    } else if (isNewScreen) {
+      main.focus();
+    }
+  }
+
+  function navVisible() {
+    return view === "ledger" || view === "content" || phase === "setup" || phase === "capture" || phase === "done";
+  }
+
+  function scheduleFocus(fn) { pendingFocus = fn; }
+
+  function switchView(name) {
+    view = name;
+    if (name === "ledger") subscribeLedger();
+    scheduleFocus(function () { return document.querySelector('nav.views button[data-view="' + name + '"]'); });
+    render();
+  }
+
+  window.addEventListener("resize", function () {
+    if (onboardStep && (phase === "brief" || phase === "sorting")) renderOnboardTour();
+  });
+
+  document.addEventListener("click", function (e) {
+    if (openExportMenu !== null && !e.target.closest(".export-menu-wrap")) {
+      openExportMenu = null;
+      render();
+    }
+  });
+
+  // ---------- Keyboard shortcuts ----------
+  // Appended to <body> like the onboarding tour, so it overlays whatever
+  // screen is showing rather than needing its own phase/view.
+  var SHORTCUTS = [
+    { keys: ["↵"], desc: "Activate the highlighted button", scope: "Wherever one’s shown" },
+    { keys: ["Esc"], desc: "Put down a held card, close menus and dialogs", scope: null },
+    { keys: ["?"], desc: "Show or hide this list", scope: "Moderator screens" },
+    { keys: ["1"], desc: "Switch to Session", scope: "Moderator screens" },
+    { keys: ["2"], desc: "Switch to Ledger", scope: "Moderator screens" },
+    { keys: ["3"], desc: "Switch to Content", scope: "Moderator screens" },
+    { keys: ["T"], desc: "Toggle light / dark theme", scope: "Moderator screens" },
+    { keys: [isMac() ? "⌘" : "Ctrl", "S"], desc: "Save content changes", scope: "Content tab" }
+  ];
+
+  function isMac() { return /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || ""); }
+
+  function removeShortcutsPanel() {
+    var panel = document.getElementById("shortcuts-root");
+    if (panel) panel.remove();
+  }
+
+  function toggleShortcuts(force) {
+    shortcutsOpen = typeof force === "boolean" ? force : !shortcutsOpen;
+    if (shortcutsOpen) {
+      renderShortcutsPanel();
+    } else {
+      removeShortcutsPanel();
+      var btn = document.getElementById("shortcuts-btn");
+      if (btn) btn.focus();
+    }
+  }
+
+  function renderShortcutsPanel() {
+    removeShortcutsPanel();
+    var backdrop = document.createElement("div");
+    backdrop.id = "shortcuts-root";
+    backdrop.className = "shortcuts-backdrop";
+    backdrop.addEventListener("mousedown", function (e) { if (e.target === backdrop) toggleShortcuts(false); });
+
+    var panel = document.createElement("div");
+    panel.className = "shortcuts-panel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.setAttribute("aria-labelledby", "shortcuts-title");
+    panel.tabIndex = -1;
+
+    var head = document.createElement("div");
+    head.style.cssText = "display:flex; justify-content:space-between; align-items:center; gap:12px;";
+    var h = document.createElement("h2");
+    h.id = "shortcuts-title";
+    h.style.margin = "0";
+    h.textContent = "Keyboard shortcuts";
+    var closeBtn = document.createElement("button");
+    closeBtn.className = "icon-btn";
+    closeBtn.setAttribute("aria-label", "Close");
+    closeBtn.innerHTML = CLOSE_ICON;
+    closeBtn.addEventListener("click", function () { toggleShortcuts(false); });
+    head.appendChild(h);
+    head.appendChild(closeBtn);
+    panel.appendChild(head);
+    panel.appendChild(Object.assign(document.createElement("p"), {
+      className: "hint", style: "margin-top:6px;",
+      textContent: "Shortcuts are ignored while you're typing in a text field, except Esc and Save."
+    }));
+
+    var list = document.createElement("ul");
+    list.className = "shortcuts-list";
+    SHORTCUTS.forEach(function (s) {
+      var li = document.createElement("li");
+      var descWrap = document.createElement("span");
+      var descEl = document.createElement("span");
+      descEl.className = "desc";
+      descEl.textContent = s.desc;
+      descWrap.appendChild(descEl);
+      if (s.scope) {
+        var scopeEl = document.createElement("span");
+        scopeEl.className = "scope";
+        scopeEl.textContent = s.scope;
+        descWrap.appendChild(scopeEl);
+      }
+      var kbdRow = document.createElement("span");
+      kbdRow.className = "kbd-row";
+      s.keys.forEach(function (k) {
+        var kbd = document.createElement("kbd");
+        kbd.className = "kbd";
+        kbd.textContent = k;
+        kbdRow.appendChild(kbd);
+      });
+      li.appendChild(descWrap);
+      li.appendChild(kbdRow);
+      list.appendChild(li);
+    });
+    panel.appendChild(list);
+
+    backdrop.appendChild(panel);
+    document.body.appendChild(backdrop);
+    panel.focus();
+  }
+
+  document.addEventListener("keydown", function (e) {
+    // The shortcuts panel is the only truly modal overlay here (a full
+    // backdrop) and has just one focusable control, so keep Tab from
+    // leaking focus out to whatever is behind it.
+    if (shortcutsOpen && e.key === "Tab") {
+      e.preventDefault();
+      var close = document.querySelector(".shortcuts-panel .icon-btn");
+      if (close) close.focus();
+      return;
+    }
+
+    var tag = (document.activeElement && document.activeElement.tagName) || "";
+    var typing = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (document.activeElement && document.activeElement.isContentEditable);
+
+    // Works even while typing in the Content tab's JSON editor -- that's
+    // the whole point of a save shortcut.
+    if ((e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === "s" && view === "content") {
+      e.preventDefault();
+      saveContent();
+      return;
+    }
+
+    if (e.key === "Escape") {
+      if (shortcutsOpen) { toggleShortcuts(false); return; }
+      if (openExportMenu !== null) { closeExportMenu(); return; }
+      if (dragState) { onCardPointerCancel(); return; }
+      if (onboardStep && (phase === "brief" || phase === "sorting")) { skipOnboardTour(); return; }
+      // Putting a held card down is the participant's own undo, so it
+      // comes before any of the moderator confirmations below.
+      if (selectedCard) { clearSelection(); return; }
+      if (confirmFinishSort) {
+        confirmFinishSort = false;
+        scheduleFocus(function () { return document.getElementById("finish-sort-btn"); });
+        render();
+        return;
+      }
+      if (confirmRetake) {
+        confirmRetake = false;
+        scheduleFocus(function () { return document.getElementById("retake-sort-btn"); });
+        render();
+        return;
+      }
+      if (confirmEndSession) {
+        confirmEndSession = false;
+        scheduleFocus(function () { return document.getElementById("end-session-btn"); });
+        render();
+        return;
+      }
+      if (confirmDeleteId !== null) {
+        var wasId = confirmDeleteId;
+        confirmDeleteId = null;
+        scheduleFocus(function () { return findDeleteBtn(wasId); });
+        render();
+        return;
+      }
+      if (confirmClearAll) {
+        confirmClearAll = false;
+        scheduleFocus(function () { return document.getElementById("clear-all-btn"); });
+        render();
+        return;
+      }
+      return;
+    }
+
+    // Enter activates the screen's highlighted primary action (marked with
+    // .cta-primary and shown with its own ↵ hint) even when nothing has
+    // been Tabbed to yet. If a button already has focus, leave it to the
+    // browser's native Enter-activation rather than firing both.
+    if (e.key === "Enter" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      var activeTag = document.activeElement ? document.activeElement.tagName : "";
+      var blocksEnter = activeTag === "TEXTAREA" || activeTag === "SELECT" || activeTag === "BUTTON" ||
+        (document.activeElement && document.activeElement.isContentEditable);
+      if (!blocksEnter) {
+        // The onboarding tour sits on top without being a real focus trap
+        // (its tip is a focused div, not a button), so without this Enter
+        // would fall through to the CTA underneath and start the sort
+        // mid-tour. While the tour is up, Enter drives it.
+        if (onboardStep && (phase === "brief" || phase === "sorting")) {
+          var tourNext = document.querySelector("#onboard-tour-root .onboard-tip-actions .btn-primary");
+          if (tourNext) { e.preventDefault(); tourNext.click(); }
+        } else if (activeTag === "INPUT" && selectedCard) {
+          // Typing a group name with a card in hand: Enter should commit
+          // the name, not fire the "I'm done sorting" CTA underneath.
+          e.preventDefault();
+          document.activeElement.blur();
+        } else {
+          var cta = document.querySelector("main .cta-primary");
+          if (cta && !cta.disabled) { e.preventDefault(); cta.click(); }
+        }
+      }
+      return;
+    }
+
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (typing) return;
+
+    // The shortcuts panel documents moderator-only shortcuts (view
+    // switching, theme, save), so it -- and the "?" that opens it -- stay
+    // out of the participant's hands along with the rest of the nav.
+    if (navVisible()) {
+      if (e.key === "?") { toggleShortcuts(); return; }
+      if (e.key === "1") { switchView("session"); return; }
+      if (e.key === "2") { switchView("ledger"); return; }
+      if (e.key === "3") { switchView("content"); return; }
+      if (e.key.toLowerCase() === "t") { toggleTheme(); return; }
+    }
+  });
+
+  function boot(hotData) {
+    restoreState(hotData);
+    initCapabilities();
+    render();
+  }
+
+  if (window.claude && window.claude.hot && window.claude.hot.ready) {
+    window.claude.hot.ready(function () { boot(window.claude.hot.data || {}); });
+  } else {
+    boot({});
+  }
+})();
+</script>
