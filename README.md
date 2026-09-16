@@ -2,7 +2,7 @@
 
 A moderated card-sorting tool for working out how customers actually group the doTERRA storefront's products and content. Built for in-person research sessions: a moderator and one participant pass a single device back and forth while the participant sorts a deck of cards into groups.
 
-It is the generative half of a pair. The [Tree Testing Tool](../Tree%20Testing%20Tool/) validates a proposed navigation structure; this one tells you whether that structure matches how people group things in the first place.
+It is the generative half of a pair. The [Tree Testing Tool](https://github.com/AntWQA/Tree-Testing-Tool) validates a proposed navigation structure; this one tells you whether that structure matches how people group things in the first place.
 
 ## Hosted version
 
