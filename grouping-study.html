@@ -887,6 +887,46 @@
   .table-scroll { overflow-x: auto; }
   td.num, th.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
+  /* ---------- Column tooltips ----------
+     The tables sit inside .table-scroll (overflow-x: auto), which would
+     clip an absolutely positioned tip, so the floating element is fixed
+     and lives on <body>. It is decorative: the same text is also in the
+     header cell as visually hidden copy tied by aria-describedby, so a
+     screen reader gets it without depending on the hover element. */
+  .th-label {
+    display: inline-block;
+    border-bottom: 1px dotted var(--line-strong);
+    cursor: help;
+  }
+  .th-label:hover { border-bottom-color: var(--accent); color: var(--ink); }
+  .th-label:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .th-tip {
+    position: fixed;
+    z-index: 750;
+    max-width: 300px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.45;
+    letter-spacing: 0;
+    text-transform: none;
+    text-align: left;
+    box-shadow: var(--shadow);
+    pointer-events: none;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
   .stat-tile { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
   .stat-tile .n { font-family: var(--font-mono); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -1150,6 +1190,84 @@
   function ctaKey() {
     return el("kbd", { class: "cta-key", "aria-hidden": "true" }, ["↵"]);
   }
+
+  // ---------- Column tooltips ----------
+  // Table headers carry a lot of shorthand. Each one can explain itself on
+  // hover, and on keyboard focus too, since hover alone would leave out
+  // keyboard users and the shared tablet these sessions run on.
+  var colTipSeq = 0;
+  var colTipTimer = null;
+  var colTipAnchor = null;
+
+  function hideColTip() {
+    if (colTipTimer) { clearTimeout(colTipTimer); colTipTimer = null; }
+    colTipAnchor = null;
+    var live = document.getElementById("col-tip-live");
+    if (live) live.remove();
+  }
+
+  function positionColTip(tip, node) {
+    var r = node.getBoundingClientRect();
+    var box = tip.getBoundingClientRect();
+    tip.style.left = Math.min(Math.max(r.left, 12), Math.max(12, window.innerWidth - box.width - 12)) + "px";
+    // Below the header by default, above it when the viewport runs out.
+    if (r.bottom + box.height + 16 > window.innerHeight && r.top > box.height + 16) {
+      tip.style.top = (r.top - box.height - 8) + "px";
+    } else {
+      tip.style.top = (r.bottom + 8) + "px";
+    }
+  }
+
+  function showColTip(node) {
+    hideColTip();
+    var text = node.getAttribute("data-tip");
+    if (!text) return;
+    var tip = el("div", { class: "th-tip", id: "col-tip-live", "aria-hidden": "true" }, [text]);
+    document.body.appendChild(tip);
+    colTipAnchor = node;
+    positionColTip(tip, node);
+  }
+
+  // Focusing a header that is off-screen scrolls it into view, so a handler
+  // that simply dismissed the tip on scroll would kill it the instant a
+  // keyboard user reached it. Follow the header instead, and only give up
+  // once it has genuinely left the viewport.
+  function trackColTip() {
+    var tip = document.getElementById("col-tip-live");
+    if (!tip || !colTipAnchor) return;
+    var r = colTipAnchor.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > window.innerHeight) { hideColTip(); return; }
+    positionColTip(tip, colTipAnchor);
+  }
+
+  // A <th> whose label explains itself. `description` may be a function so
+  // a column whose meaning depends on the Content tab (the Direct rule,
+  // the agreement bands) always describes the settings actually in force.
+  function thTip(label, description, isNum) {
+    var text = typeof description === "function" ? description() : description;
+    var id = "coltip-" + (++colTipSeq);
+    var span = el("span", {
+      class: "th-label", tabindex: "0", "aria-describedby": id, "data-tip": text
+    }, [label]);
+    // A short delay on hover keeps a mouse crossing the header row from
+    // flashing a tip per column; focus shows it straight away.
+    span.addEventListener("mouseenter", function () {
+      if (colTipTimer) clearTimeout(colTipTimer);
+      colTipTimer = setTimeout(function () { showColTip(span); }, 200);
+    });
+    span.addEventListener("mouseleave", hideColTip);
+    span.addEventListener("focus", function () { showColTip(span); });
+    span.addEventListener("blur", hideColTip);
+    return el("th", { class: isNum ? "num" : null }, [
+      span,
+      el("span", { class: "sr-only", id: id }, [text])
+    ]);
+  }
+
+  // The tip is anchored to a rect captured when it opened, so anything that
+  // moves that rect has to dismiss it rather than leave it stranded.
+  window.addEventListener("scroll", trackColTip, true);
+  window.addEventListener("resize", trackColTip);
 
   function fmtTime(ms) {
     var s = Math.floor(ms / 1000);
@@ -3120,7 +3238,9 @@
     var scroll = el("div", { class: "table-scroll" });
     var table = el("table");
     table.appendChild(el("thead", {}, [el("tr", {}, [
-      el("th", {}, ["Group"]), el("th", { class: "num" }, ["Cards"]), el("th", {}, ["Contents"])
+      thTip("Group", "Either one of your categories, a group the participant added themselves, or the \u201cOther / doesn\u2019t fit\u201d bay."),
+      thTip("Cards", "How many cards ended up in it.", true),
+      thTip("Contents", "The cards themselves, in the order the participant placed them.")
     ])]));
     var tbody = el("tbody");
     (r.groups || []).forEach(function (g) {
@@ -3397,9 +3517,14 @@
     var cs = el("div", { class: "table-scroll" });
     var ct = el("table");
     ct.appendChild(el("thead", {}, [el("tr", {}, [
-      el("th", {}, ["Card"]), el("th", { class: "num" }, ["N"]), el("th", {}, ["Most common group"]),
-      el("th", { class: "num" }, ["Agreement"]), el("th", {}, ["Band"]),
-      el("th", { class: "num" }, ["Groups used"]), el("th", { class: "num" }, ["Other"]), el("th", { class: "num" }, ["In deck"])
+      thTip("Card", "The item being sorted, as listed in the deck on the Content tab."),
+      thTip("N", "How many of the participants currently shown by the filter above had this card in their deck.", true),
+      thTip("Most common group", "Where this card was put most often. Group names are matched ignoring case and spacing, so \u201cDaily use\u201d and \u201cdaily  use\u201d count as one, but near-misses like \u201cEveryday\u201d stay separate."),
+      thTip("Agreement", "The share of participants who put it in that group. Measured against everyone who saw the card, not just those who filed it, so a card half of them refused to place cannot read as near-total agreement.", true),
+      thTip("Band", function () { return agreementRuleText() + " Thresholds are set on the Content tab."; }),
+      thTip("Groups used", "How many different groups this card was spread across. A high count alongside low agreement means there is no shared mental model for it, rather than a straight contest between two options.", true),
+      thTip("Other", "How often it was parked in \u201cOther / doesn\u2019t fit\u201d instead of being grouped. The reasons given are in the table below.", true),
+      thTip("In deck", "How often it was left unplaced when the participant finished. Usually fatigue or genuine indifference, and worth reading against where it sits in the deck order.", true)
     ])]));
     var ctb = el("tbody");
     a.cards.forEach(function (c) {
@@ -3430,7 +3555,9 @@
       var ps = el("div", { class: "table-scroll" });
       var pt = el("table");
       pt.appendChild(el("thead", {}, [el("tr", {}, [
-        el("th", {}, ["Card"]), el("th", { class: "num" }, ["Parked by"]), el("th", {}, ["Reasons given"])
+        thTip("Card", "A card that at least one participant put in \u201cOther / doesn\u2019t fit\u201d."),
+        thTip("Parked by", "How many of the participants who saw this card parked it, out of that total.", true),
+        thTip("Reasons given", "What each participant typed about why it did not fit. A consistent reason here is usually a label problem you can act on without waiting for a bigger sample.")
       ])]));
       var ptb = el("tbody");
       a.parked.forEach(function (c) {
@@ -3467,7 +3594,9 @@
       var as = el("div", { class: "table-scroll" });
       var at = el("table");
       at.appendChild(el("thead", {}, [el("tr", {}, [
-        el("th", {}, ["Group name"]), el("th", { class: "num" }, ["Times created"]), el("th", { class: "num" }, ["Median size"])
+        thTip("Group name", "A group a participant made and named themselves, rather than one of your categories. This is where gaps in the proposed structure show up."),
+        thTip("Times created", "How many participants made a group with this name. Matching ignores case and spacing only, so read near-misses together.", true),
+        thTip("Median size", "The midpoint number of cards these groups held.", true)
       ])]));
       var atb = el("tbody");
       a.addedGroups.forEach(function (g) {
@@ -3494,7 +3623,10 @@
       var prs = el("div", { class: "table-scroll" });
       var prt = el("table");
       prt.appendChild(el("thead", {}, [el("tr", {}, [
-        el("th", {}, ["Card A"]), el("th", {}, ["Card B"]), el("th", { class: "num" }, ["Together"]), el("th", { class: "num" }, ["Of"])
+        thTip("Card A", "The first card in the pair."),
+        thTip("Card B", "The second card in the pair."),
+        thTip("Together", "The share of participants who placed both cards and put them in the same group. High pairs are candidates to sit together whatever the category is called.", true),
+        thTip("Of", "How many participants placed both cards in a real group. Cards parked in Other or left in the deck are excluded, since refusing to file two things is not evidence they belong together.", true)
       ])]));
       var prtb = el("tbody");
       shown.forEach(function (p) {
@@ -3894,6 +4026,7 @@
     if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
       window.claude.hot.snapshot(snapshotState());
     }
+    hideColTip();
     var textFocus = captureTextFocus();
     document.documentElement.setAttribute("data-theme", theme);
     var app = document.getElementById("app");
