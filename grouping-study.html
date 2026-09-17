@@ -801,6 +801,55 @@
     color: var(--muted);
   }
 
+  /* Audience filter. Staff already know the proposed structure, so their
+     results are not comparable to a customer's: blending the two inflates
+     every headline figure on this tab. The control drives the aggregates,
+     the session log and the export together, so what you read is always
+     what you would send. */
+  .audience-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .audience-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .seg {
+    display: flex;
+    gap: 4px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px;
+  }
+  .seg button {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .seg button.active { background: var(--ink); color: var(--paper); }
+  .seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .seg-n {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+    opacity: 0.75;
+  }
+
   .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .chip {
     border: 1px solid var(--line-strong);
@@ -1058,6 +1107,7 @@
   var endedEarly = false;        // the session stopped before every sort ran
   var expandedSessions = {};     // doc._id -> true when its result detail is expanded
   var expandedPairs = false;     // ledger: show every card pair rather than the top slice
+  var audienceFilter = "all";    // ledger: "all" | "external" | "internal" -- see audienceDocs()
   var openExportMenu = null;     // "header" | doc._id | null
   var onboardStep = null;        // null | 1..n -- floating tour step
   var onboardPauseStart = 0;     // Date.now() while an onboard step covers a timing screen
@@ -2102,11 +2152,47 @@
     } else { fail(); }
   }
 
+  // ---------- Audience ----------
+  // doTERRA staff already know the proposed structure, so their sorts are
+  // not comparable to a customer's and blending the two lifts every
+  // agreement figure. Everything on the Ledger reads through this filter:
+  // the aggregates, the session log, and the export, so the numbers on
+  // screen are always the numbers in the file.
+  //
+  // Deliberately NOT applied to the duplicate-name check, the resume
+  // banner or the in-progress count: those must always see every session
+  // regardless of what the Ledger is currently showing.
+  function audienceDocs() {
+    if (audienceFilter === "external") return ledgerDocs.filter(function (d) { return !d.participantInternal; });
+    if (audienceFilter === "internal") return ledgerDocs.filter(function (d) { return !!d.participantInternal; });
+    return ledgerDocs;
+  }
+  function audienceCounts(docs) {
+    var list = docs || ledgerDocs;
+    var internal = list.filter(function (d) { return !!d.participantInternal; }).length;
+    return { all: list.length, internal: internal, external: list.length - internal };
+  }
+  function audienceName(which) {
+    return which === "external" ? "Customers" : which === "internal" ? "doTERRA staff" : "Everyone";
+  }
+  // Describes a set of sessions by its actual make-up rather than by the
+  // filter, so an export says what is in it however it was produced.
+  function audienceSummary(docs) {
+    var c = audienceCounts(docs);
+    if (!c.all) return "no participants";
+    if (!c.internal) return plural(c.external, "customer");
+    if (!c.external) return plural(c.internal, "doTERRA staff member") ;
+    return plural(c.all, "participant") + " (" + c.external + " customer" + (c.external === 1 ? "" : "s") +
+      ", " + c.internal + " doTERRA staff)";
+  }
+
   // ---------- Analysis ----------
-  // Every result for one sort index, across every saved session.
-  function resultsForSort(sortIdx) {
+  // Every result for one sort index, across the sessions passed in.
+  // Takes the docs explicitly rather than reading ledgerDocs, so an export
+  // of one session is never silently narrowed by the Ledger's own filter.
+  function resultsForSort(sortIdx, docs) {
     var out = [];
-    ledgerDocs.forEach(function (doc) {
+    (docs || []).forEach(function (doc) {
       (doc.results || []).forEach(function (r) {
         if (r.sortIndex === sortIdx) out.push({ doc: doc, r: r });
       });
@@ -2135,8 +2221,8 @@
     return map;
   }
 
-  function analysisForSort(sortIdx) {
-    var rows = resultsForSort(sortIdx);
+  function analysisForSort(sortIdx, docs) {
+    var rows = resultsForSort(sortIdx, docs);
     var n = rows.length;
     var cardStats = {};   // card -> { n, byGroup: {norm: {display, count}}, parked, unsorted, reasons: [] }
     var pairTogether = {};// "a||b" -> count grouped together
@@ -2281,11 +2367,9 @@
   // both of these put them in the same group". This is the file to open in
   // a stats package if the sample ever gets big enough for clustering.
   function coOccurrenceCsv(docs) {
-    var saved = ledgerDocs;
-    ledgerDocs = docs; // analysisForSort reads the module-level ledger
     var sections = [];
     (activeStudy.sorts || DEFAULT_SORTS).forEach(function (s, idx) {
-      var a = analysisForSort(idx);
+      var a = analysisForSort(idx, docs);
       if (!a.n) return;
       var cards = a.cards.map(function (c) { return c.card; }).sort();
       var lookup = {};
@@ -2303,7 +2387,6 @@
       });
       sections.push(csvJoin(rows));
     });
-    ledgerDocs = saved;
     return sections.join("\n\n");
   }
 
@@ -2332,12 +2415,15 @@
   }
 
   function markdownForDocs(docs) {
-    var saved = ledgerDocs;
-    ledgerDocs = docs;
-    var lines = ["# Grouping Study Results", "", "_Exported " + new Date().toLocaleString() + "_"];
+    var lines = ["# Grouping Study Results", "",
+      "_Exported " + new Date().toLocaleString() + "_", "",
+      "**Covers " + audienceSummary(docs) + ".**"];
+    if (audienceCounts(docs).internal && audienceCounts(docs).external) {
+      lines.push("", "> This export mixes doTERRA staff with customers. Staff already know the proposed structure, so the aggregate figures below read higher than a customer-only set would. Split them on the Participant type column of the CSV export before quoting anything.");
+    }
 
     (activeStudy.sorts || DEFAULT_SORTS).forEach(function (s, idx) {
-      var a = analysisForSort(idx);
+      var a = analysisForSort(idx, docs);
       if (!a.n) return;
       lines.push("", "## Sort " + (idx + 1) + " · aggregate", "");
       lines.push("Participants: " + a.n + " · Mode: " + s.mode + " · Median time: " + fmtTime(a.medianTime) +
@@ -2401,7 +2487,6 @@
         if (r.notes) lines.push("", "Moderator notes: " + r.notes);
       });
     });
-    ledgerDocs = saved;
     return lines.join("\n");
   }
 
@@ -3270,15 +3355,19 @@
     return wrap;
   }
 
-  function renderSortAnalysis(s, idx) {
-    var a = analysisForSort(idx);
+  function renderSortAnalysis(s, idx, docs) {
+    var a = analysisForSort(idx, docs);
     var frag = document.createDocumentFragment();
 
     var summary = el("div", { class: "card" });
     summary.appendChild(el("h2", {}, [sortCount() > 1 ? "Sort " + (idx + 1) + " · results" : "Results"]));
     summary.appendChild(el("p", { class: "hint" }, [s.prompt]));
     if (!a.n) {
-      summary.appendChild(el("div", { class: "empty" }, ["No sessions saved for this sort yet. Run one from the Session tab."]));
+      summary.appendChild(el("div", { class: "empty" }, [
+        audienceFilter === "all"
+          ? "No sessions saved for this sort yet. Run one from the Session tab."
+          : "No " + audienceName(audienceFilter).toLowerCase() + " sessions for this sort. Other participant types may have some, switch the filter above."
+      ]));
       frag.appendChild(summary);
       return frag;
     }
@@ -3434,6 +3523,44 @@
     return frag;
   }
 
+  function renderAudienceBar() {
+    var counts = audienceCounts(ledgerDocs);
+    var card = el("div", { class: "card" });
+    var bar = el("div", { class: "audience-bar" });
+    bar.appendChild(el("span", { class: "audience-label", id: "audience-label" }, ["Showing"]));
+    var seg = el("div", { class: "seg", role: "group", "aria-labelledby": "audience-label" });
+    [["all", counts.all], ["external", counts.external], ["internal", counts.internal]].forEach(function (pair) {
+      var key = pair[0], n = pair[1];
+      var btn = el("button", {
+        class: audienceFilter === key ? "active" : "",
+        "data-audience": key,
+        "aria-pressed": String(audienceFilter === key)
+      }, [audienceName(key), el("span", { class: "seg-n" }, [String(n)])]);
+      // A filter that empties the page is worse than no filter: leave the
+      // button visible so the count still reads, but not selectable.
+      if (!n && audienceFilter !== key) btn.disabled = true;
+      btn.addEventListener("click", function () {
+        audienceFilter = key;
+        scheduleFocus(function () { return document.querySelector('.seg button[data-audience="' + key + '"]'); });
+        render();
+      });
+      seg.appendChild(btn);
+    });
+    bar.appendChild(seg);
+    card.appendChild(bar);
+    if (audienceFilter === "all" && counts.internal && counts.external) {
+      card.appendChild(el("div", { class: "warn-note" }, [
+        "These totals mix " + plural(counts.internal, "doTERRA staff member") + " in with " +
+        plural(counts.external, "customer") + ". Staff already know the proposed structure, so every agreement figure below reads higher than a customer-only set would. Switch to Customers before quoting anything."
+      ]));
+    } else if (audienceFilter === "internal") {
+      card.appendChild(el("div", { class: "info-note", style: "margin-top:12px;" }, [
+        "Staff only. Useful as a sense check on the deck and the wording, not as evidence about customers."
+      ]));
+    }
+    return card;
+  }
+
   function renderLedger() {
     subscribeLedger();
     var frag = document.createDocumentFragment();
@@ -3443,15 +3570,19 @@
       return frag;
     }
 
+    var shown = audienceDocs();
+    if (ledgerDocs.length) frag.appendChild(renderAudienceBar());
+
     (activeStudy.sorts || DEFAULT_SORTS).forEach(function (s, idx) {
-      frag.appendChild(renderSortAnalysis(s, idx));
+      frag.appendChild(renderSortAnalysis(s, idx, shown));
     });
 
     var raw = el("div", { class: "card" });
     raw.appendChild(el("div", { style: "display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;" }, [
       el("h2", { style: "margin:0;" }, ["Session log"]),
       el("div", { style: "display:flex; gap:8px;" }, [
-        ledgerDocs.length ? renderExportMenu("header", function () { return ledgerDocs; }, "grouping-study-results", true, true) : null,
+        shown.length ? renderExportMenu("header", function () { return audienceDocs(); },
+          "grouping-study-results" + (audienceFilter === "all" ? "" : "-" + audienceFilter), true, true) : null,
         ledgerDocs.length ? el("button", {
           id: "clear-all-btn",
           class: "btn btn-ghost", style: "color:var(--fail); border-color:var(--fail); display:inline-flex; align-items:center; gap:6px;",
@@ -3462,6 +3593,9 @@
           }
         }, [el("span", { style: "display:inline-flex;", html: TRASH_ICON }), "Clear all data"]) : null
       ])
+    ]));
+    raw.appendChild(el("div", { class: "hint", style: "margin:6px 0 0;" }, [
+      "Export covers " + audienceSummary(shown) + ", matching the filter above. Every row carries its own participant type, so the two can always be split again downstream."
     ]));
     if (mode === "local") {
       raw.appendChild(el("div", { style: "margin-top:6px; color:var(--muted); font-size:14px; max-width:60ch;" }, [
@@ -3474,7 +3608,9 @@
         class: "warn-note", role: "alertdialog", "aria-label": "Confirm delete all sessions",
         style: "display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:12px; color:var(--fail); background:var(--fail-bg);"
       }, [
-        el("span", {}, ["Delete all " + plural(ledgerDocs.length, "saved session") + "? This can't be undone."]),
+        el("span", {}, ["Delete all " + plural(ledgerDocs.length, "saved session") +
+          (audienceFilter === "all" ? "" : ", including the ones the current filter is hiding") +
+          "? This can't be undone."]),
         el("div", { style: "display:flex; gap:8px;" }, [
           el("button", {
             id: "ledger-clearall-cancel", class: "btn btn-ghost",
@@ -3489,10 +3625,14 @@
       ]));
     }
 
-    if (!ledgerDocs.length) {
-      raw.appendChild(el("div", { class: "empty" }, ["No sessions saved yet. Run one from the Session tab."]));
+    if (!shown.length) {
+      raw.appendChild(el("div", { class: "empty" }, [
+        ledgerDocs.length
+          ? "No " + audienceName(audienceFilter).toLowerCase() + " sessions saved. Switch the filter above to see the others."
+          : "No sessions saved yet. Run one from the Session tab."
+      ]));
     } else {
-      ledgerDocs.forEach(function (doc) {
+      shown.forEach(function (doc) {
         var block = el("div", { style: "margin-top:18px; padding-top:14px; border-top:1px solid var(--line);" });
         var isConfirming = confirmDeleteId === doc._id;
         var isExpanded = !!expandedSessions[doc._id];
