@@ -2418,9 +2418,6 @@
     var lines = ["# Grouping Study Results", "",
       "_Exported " + new Date().toLocaleString() + "_", "",
       "**Covers " + audienceSummary(docs) + ".**"];
-    if (audienceCounts(docs).internal && audienceCounts(docs).external) {
-      lines.push("", "> This export mixes doTERRA staff with customers. Staff already know the proposed structure, so the aggregate figures below read higher than a customer-only set would. Split them on the Participant type column of the CSV export before quoting anything.");
-    }
 
     (activeStudy.sorts || DEFAULT_SORTS).forEach(function (s, idx) {
       var a = analysisForSort(idx, docs);
