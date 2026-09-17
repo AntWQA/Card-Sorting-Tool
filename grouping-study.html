@@ -3548,12 +3548,7 @@
     });
     bar.appendChild(seg);
     card.appendChild(bar);
-    if (audienceFilter === "all" && counts.internal && counts.external) {
-      card.appendChild(el("div", { class: "warn-note" }, [
-        "These totals mix " + plural(counts.internal, "doTERRA staff member") + " in with " +
-        plural(counts.external, "customer") + ". Staff already know the proposed structure, so every agreement figure below reads higher than a customer-only set would. Switch to Customers before quoting anything."
-      ]));
-    } else if (audienceFilter === "internal") {
+    if (audienceFilter === "internal") {
       card.appendChild(el("div", { class: "info-note", style: "margin-top:12px;" }, [
         "Staff only. Useful as a sense check on the deck and the wording, not as evidence about customers."
       ]));
