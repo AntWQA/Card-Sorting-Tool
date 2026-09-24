@@ -3187,8 +3187,7 @@
     card.appendChild(el("div", { class: "progress-row" }, [
       el("span", { class: "step" }, [
         (sortCount() > 1 ? "SORT " + (sortIndex + 1) + " OF " + sortCount() + " · " : "") + plural(s.cards.length, "card")
-      ]),
-      practiceRun ? el("span", { class: "timer" }, ["00:00"]) : null
+      ])
     ]));
     card.appendChild(el("div", { class: "scenario", id: isFirst ? "onboard-target-prompt" : undefined }, [s.prompt]));
     card.appendChild(el("p", { class: "hint" }, [
