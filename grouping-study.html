@@ -255,6 +255,16 @@
     margin: 0 0 4px;
   }
   p.hint { color: var(--muted); font-size: 14px; margin: 0 0 18px; max-width: 60ch; }
+  .time-label {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-tint);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
 
   .eyebrow {
     font-size: 11px;
@@ -528,14 +538,10 @@
   .scenario-meta { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
 
   /* ---------- Sorting board ---------- */
-  /* The deck sticks under the header so the next card is always reachable
-     without scrolling back up a tall board. It's capped and scrolls
-     internally rather than growing, so a 30-card deck can't swallow the
-     screen and hide the columns it's meant to be dragged into. */
+  /* Every remaining card shows at once, no internal scroll, so nothing is
+     hidden from the participant. It sits in the normal flow (not sticky)
+     so an expanded deck never overlaps the group columns below it. */
   .board-deck {
-    position: sticky;
-    top: calc(env(safe-area-inset-top, 0px) + 66px);
-    z-index: 15;
     background: var(--paper-raised);
     border: 1px solid var(--line-strong);
     border-radius: 12px;
@@ -543,11 +549,11 @@
     margin-bottom: 16px;
     box-shadow: var(--shadow);
   }
-  /* --accent-tint is translucent in the dark theme, and both of these
-     surfaces are sticky, so a bare tint lets the board scroll visibly
-     through them. Painting the tint as a background-image over an opaque
-     background-color keeps the same colour in both themes without the
-     bleed. */
+  /* --accent-tint is translucent in the dark theme, and this surface sits
+     under the sticky select-bar, so a bare tint would let that bar's own
+     background show through as it scrolls past. Painting the tint as a
+     background-image over an opaque background-color keeps the same
+     colour in both themes without the bleed. */
   .board-deck.drop-target {
     border-color: var(--accent);
     background-color: var(--paper-raised);
@@ -584,8 +590,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    max-height: 156px;
-    overflow-y: auto;
     padding: 2px;
   }
   .deck-empty-note { font-size: 13px; color: var(--muted); padding: 4px 2px; }
@@ -988,13 +992,11 @@
     .new-group-btn { min-height: 56px; }
     .group-col { min-height: 0; }
     .naming-row { grid-template-columns: 1fr; gap: 8px; }
-    .deck-strip { max-height: 168px; }
   }
   @media (max-width: 480px) {
     .brand h1 { font-size: 22px; }
     .scenario { font-size: 21px; }
     .card { padding: 18px; }
-    .board-deck { top: calc(env(safe-area-inset-top, 0px) + 60px); }
   }
 </style>
 
@@ -1298,6 +1300,18 @@
   }
   function sortCount() {
     return (activeStudy.sorts || DEFAULT_SORTS).length;
+  }
+
+  // Rough duration guide for the whole session (every sort, back to back),
+  // not a promise. Based on the usual moderated think-aloud pace: 20-40
+  // seconds per card, plus a couple of minutes per sort for reading the
+  // prompt and naming groups.
+  function estimatedSessionMinutes() {
+    var sorts = activeStudy.sorts || DEFAULT_SORTS;
+    var totalCards = sorts.reduce(function (sum, s) { return sum + s.cards.length; }, 0);
+    var low = Math.max(1, Math.round((totalCards * 20 + sorts.length * 90) / 60));
+    var high = Math.max(low + 1, Math.round((totalCards * 40 + sorts.length * 150) / 60));
+    return low + "–" + high + " min";
   }
 
   function copyToClipboard(text, btn, textareaEl) {
@@ -2820,7 +2834,9 @@
     });
     deck.addEventListener("click", function () { if (selectedCard) placeCard(selectedCard, "deck"); });
     deck.appendChild(el("div", { class: "deck-head" }, [
-      el("span", { class: "deck-title" }, ["Cards to sort"]),
+      el("span", { class: "deck-title" }, [
+        (sortCount() > 1 ? "Sort " + (sortIndex + 1) + " of " + sortCount() + " · " : "") + "Cards to sort"
+      ]),
       el("span", { class: "deck-count" }, [placedCount() + " of " + deckOrder.length + " placed"])
     ]));
     if (!remaining.length) {
@@ -2920,24 +2936,11 @@
   }
 
   function renderSorting() {
-    var s = currentSort();
     var frag = document.createDocumentFragment();
-    var head = el("div", { class: "card", style: "margin-bottom:16px;" });
-    head.appendChild(el("div", { class: "eyebrow muted" }, ["PARTICIPANT"]));
-    head.appendChild(el("div", { class: "progress-row" }, [
-      el("span", { class: "step" }, [
-        (sortCount() > 1 ? "SORT " + (sortIndex + 1) + " OF " + sortCount() + " · " : "") +
-        placedCount() + " OF " + deckOrder.length + " PLACED"
-      ]),
-      practiceRun ? el("span", { class: "timer", id: "timer-readout" }, ["00:00"]) : null
-    ]));
-    head.appendChild(el("div", { class: "scenario compact" }, [s.prompt]));
-    head.appendChild(el("div", { class: "think-aloud-note" }, [
-      el("span", { class: "think-aloud-icon", html: SPEECH_ICON }),
-      "Remember to think out loud as you go"
-    ]));
-    frag.appendChild(head);
-
+    // The task was already read on the brief screen -- repeating it in a
+    // full "card" here (plus a live clock) was the first thing to go once
+    // sorting starts. The sort progress still needs to be visible
+    // somewhere, so it rides along on the deck header instead.
     frag.appendChild(renderDeck());
 
     var boardWrap = el("div", { id: "onboard-target-groups" });
@@ -3082,6 +3085,7 @@
     var s = (activeStudy.sorts || DEFAULT_SORTS)[0];
     var card = el("div", { class: "card" });
     card.appendChild(el("h2", {}, ["Start a session"]));
+    card.appendChild(el("div", { class: "time-label" }, ["Expected time: ~" + estimatedSessionMinutes()]));
     card.appendChild(el("p", { class: "hint" }, [
       "One participant at a time. " + (sortCount() === 1 ? "One sort" : sortCount() + " sorts") + ", " +
       plural(s.cards.length, "card") + ", " + s.mode + " sort. Let them group without steering, and keep them talking."
@@ -3177,6 +3181,9 @@
     var isFirst = sortIndex === 0;
     var card = el("div", { class: "card" });
     card.appendChild(el("div", { class: "eyebrow muted" }, ["PARTICIPANT"]));
+    if (isFirst) {
+      card.appendChild(el("div", { class: "time-label" }, ["Expected time: ~" + estimatedSessionMinutes()]));
+    }
     card.appendChild(el("div", { class: "progress-row" }, [
       el("span", { class: "step" }, [
         (sortCount() > 1 ? "SORT " + (sortIndex + 1) + " OF " + sortCount() + " · " : "") + plural(s.cards.length, "card")
