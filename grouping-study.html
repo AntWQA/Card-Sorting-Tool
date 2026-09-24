@@ -2656,8 +2656,7 @@
   // element by id, and each tagged with the phase it belongs to so the
   // tour never tries to render a step's target on the wrong screen.
   var ONBOARD_STEPS = [
-    { target: "onboard-target-prompt", phase: "brief", title: "Your task",
-      text: "You'll get a short instruction like this one, and a deck of cards to put into groups. There are no right answers here, we're testing the website, not you." },
+    { target: "onboard-target-prompt", phase: "brief", title: "Task instructions" },
     { target: "onboard-target-start", phase: "brief", title: "Where to start",
       text: "Press Start when you're ready. Take as long as you like once you're in." },
     { target: "onboard-target-deck", phase: "sorting", title: "Your cards",
@@ -2710,7 +2709,7 @@
     tip.className = "onboard-tip";
     tip.setAttribute("role", "dialog");
     tip.setAttribute("aria-labelledby", "onboard-tip-title");
-    tip.setAttribute("aria-describedby", "onboard-tip-text");
+    if (stepDef.text) tip.setAttribute("aria-describedby", "onboard-tip-text");
     tip.tabIndex = -1;
     var tipWidth = Math.min(300, window.innerWidth - 24);
     var left = Math.min(Math.max(rect.left, 12), window.innerWidth - tipWidth - 12);
@@ -2741,11 +2740,13 @@
     titleEl.textContent = stepDef.title;
     tip.appendChild(titleEl);
 
-    var textEl = document.createElement("div");
-    textEl.className = "onboard-tip-text";
-    textEl.id = "onboard-tip-text";
-    textEl.textContent = stepDef.text;
-    tip.appendChild(textEl);
+    if (stepDef.text) {
+      var textEl = document.createElement("div");
+      textEl.className = "onboard-tip-text";
+      textEl.id = "onboard-tip-text";
+      textEl.textContent = stepDef.text;
+      tip.appendChild(textEl);
+    }
 
     var actions = document.createElement("div");
     actions.className = "onboard-tip-actions";
