@@ -1046,9 +1046,10 @@
 
   // ---------- Data: the default study ----------
   // The card deck is the destination pages of the proposed storefront IA,
-  // deduplicated and trimmed to 30 so a moderated in-person session stays
-  // inside the window before sorting fatigue starts distorting the back
-  // half of the deck.
+  // deduplicated to match the live site's current nav. Above the 30-card
+  // guide (see deckWarnAt below), so expect fatigue to distort the back
+  // half of a moderated session -- trim it back down if that shows up in
+  // the notes.
   var DEFAULT_CARDS = [
     "Essential Oils", "Personal Care", "Supplements", "Accessories", "Collections & Enrollment",
     "Limited Time Offers", "New Products", "Best Sellers", "Exclusive Kits",
@@ -1057,7 +1058,11 @@
     "Certified Pure Testing Grade", "Source to You", "The doTERRA Difference",
     "Business Opportunity", "Path to $500", "Recipes", "Healthy Living",
     "Loyalty Rewards Program", "Wholesale Membership",
-    "Our Story", "Founders", "Convention", "Healing Hands Foundation"
+    "Our Story", "Founders", "Convention", "Healing Hands Foundation",
+    // Shop by Concern, added to match the live site's current nav.
+    "Sleep Solutions", "Stress Solutions", "Pain Solutions", "Immunity Solutions",
+    "Digestion Solutions", "Respiratory Solutions", "Focus Solutions", "Detox Solutions",
+    "Skin Solutions", "Hormone Solutions", "Metabolic Solutions"
   ];
 
   // Seeded from the Wayfinding Trial's proposed IA so the two studies are
@@ -1067,7 +1072,7 @@
   // verbatim rather than hand-merged so that re-deriving after the tree
   // changes is a like-for-like replacement, not a re-judgement.
   var DEFAULT_CATEGORIES = [
-    "Shop by Category", "Shop by Goal", "Shop: Highlights",
+    "Shop by Category", "Shop by Goal", "Shop by Concern", "Shop: Highlights",
     "Learn: Essential Oils", "Learn: Resources", "Learn: Business", "Learn: Blog & Resources",
     "Rewards",
     "Our Story: About doTERRA", "Our Story: Events", "Our Story: The doTERRA Difference"
